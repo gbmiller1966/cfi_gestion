@@ -84,7 +84,7 @@ return new class extends Migration
         });
 
         // Informes Pactados (Ajustada con meses_pactados)
-        Schema::create('expediente_informes', function (Blueprint $table) {
+/*         Schema::create('expediente_informes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('expediente_id')->constrained()->onDelete('cascade');
             $table->foreignId('informe_id')->constrained('informes_maestros')->onDelete('cascade');
@@ -92,7 +92,7 @@ return new class extends Migration
             $table->date('fecha_limite')->nullable();
             $table->string('estado_entrega')->default('Pendiente');
             $table->timestamps();
-        });
+        }); */
 
         Schema::create('hitos', function (Blueprint $table) {
             $table->id();
@@ -104,7 +104,7 @@ return new class extends Migration
 
     public function down(): void {
         Schema::dropIfExists('hitos');
-        Schema::dropIfExists('expediente_informes');
+        // Schema::dropIfExists('expediente_informes');
         Schema::dropIfExists('expediente_colaboradores');
         Schema::dropIfExists('expediente_proveedor');
         Schema::dropIfExists('expedientes');

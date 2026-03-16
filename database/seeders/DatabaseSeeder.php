@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
             $roleJefe = Role::create(['name' => 'Jefe de Área']);
             $roleDirector = Role::create(['name' => 'Director']);
 
-            // 2. Crear tu usuario Administrador
+    // 2. Crear tu usuario Administrador
             $adminUser = User::create([
                 'nombre' => 'Guillermo',
                 'apellido' => 'Admin',
@@ -32,7 +32,12 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('password123'),
             ]);
 
-            // 3. Asignarle el rol de Admin a tu usuario
+    // 3. Asignarle el rol de Admin a tu usuario
             $adminUser->assignRole($roleAdmin);
+
+            $this->call([
+            TablasMaestrasSeeder::class,
+            // Acá abajo podrías llamar después a un UserSeeder si querés crear tu usuario y el de Hernán automáticamente
+        ]);
     }
 }
