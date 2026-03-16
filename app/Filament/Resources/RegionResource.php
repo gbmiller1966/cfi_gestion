@@ -55,4 +55,9 @@ class RegionResource extends Resource
             'edit' => Pages\EditRegion::route('/{record}/edit'),
         ];
     }
+    public static function canViewAny(): bool
+    {
+        // Solo el Admin verá este botón en el menú izquierdo
+        return auth()->user()->hasRole('Admin');
+    }
 }

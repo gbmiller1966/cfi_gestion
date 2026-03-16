@@ -124,4 +124,9 @@ class ContraparteProvincialResource extends Resource
             'edit' => Pages\EditContraparteProvincial::route('/{record}/edit'),
         ];
     }
+    public static function canViewAny(): bool
+    {
+        // Tanto el Admin como el Técnico pueden ver y gestionar esto
+        return auth()->user()->hasAnyRole(['Admin', 'Técnico']);
+    }
 }

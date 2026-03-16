@@ -27,8 +27,8 @@ class DatabaseSeeder extends Seeder
             $adminUser = User::create([
                 'nombre' => 'Guillermo',
                 'apellido' => 'Admin',
-                'usuario' => 'gbmiller',
-                'email' => 'admin@cfi.gob.ar',
+                'usuario' => 'miller',
+                'email' => 'admin@cfi.org.ar',
                 'password' => Hash::make('password123'),
             ]);
 

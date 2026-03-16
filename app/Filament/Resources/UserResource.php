@@ -133,4 +133,9 @@ class UserResource extends Resource
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }
+    public static function canViewAny(): bool
+    {
+        // Solo el Admin verá este botón en el menú izquierdo
+        return auth()->user()->hasRole('Admin');
+    }
 }

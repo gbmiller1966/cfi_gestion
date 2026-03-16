@@ -56,4 +56,9 @@ class InformeMaestroResource extends Resource
             'edit' => Pages\EditInformeMaestro::route('/{record}/edit'),
         ];
     }
+    public static function canViewAny(): bool
+    {
+        // Solo el Admin verá este botón en el menú izquierdo
+        return auth()->user()->hasRole('Admin');
+    }
 }

@@ -132,4 +132,9 @@ class ProveedorResource extends Resource
             'edit' => Pages\EditProveedor::route('/{record}/edit'),
         ];
     }
+    public static function canViewAny(): bool
+    {
+        // Tanto el Admin como el Técnico pueden ver y gestionar esto
+        return auth()->user()->hasAnyRole(['Admin', 'Técnico']);
+    }
 }
