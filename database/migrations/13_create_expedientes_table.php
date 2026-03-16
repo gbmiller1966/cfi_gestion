@@ -21,7 +21,7 @@ return new class extends Migration
 
             // --- Relaciones de Propiedad y Estructura ---
             $table->foreignId('user_id')->constrained('users'); // Técnico dueño
-            $table->foreignId('direccion_id')->constrained('direcciones'); 
+            $table->foreignId('direccion_id')->constrained('direcciones');
             $table->foreignId('area_id')->constrained('areas');
 
             // --- Relaciones Maestras ---
@@ -33,6 +33,7 @@ return new class extends Migration
             $table->foreignId('tema_id')->constrained('temas_estrategicos');
             $table->foreignId('tipo_contrato_id')->constrained('tipos_contrato');
             $table->foreignId('estado_contrato_id')->constrained('estados_contrato');
+
 
             // --- Circuito de Tiempos (16 Etapas) ---
             $table->timestamp('f_ingreso_cfi')->nullable();
