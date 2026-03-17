@@ -49,8 +49,38 @@ class Expediente extends Model
                     $expediente->region_id = $provincia->region_id;
                 }
             }
-        // 2. CÁLCULO DEL ESTADO (Cascada de fin a inicio)
+            // 2. CÁLCULO DEL ESTADO (Cascada de fin a inicio apuntando al ID)
+
             if (!empty($expediente->estado_excepcion)) {
+                // Ojo acá: si 'estado_excepcion' antes guardaba texto,
+                // vas a tener que asegurarte de que en el formulario ahora guarde el ID de la excepción.
+                $expediente->estado_contrato_id = $expediente->estado_excepcion;
+                return;
+            }
+
+            if (!empty($expediente->f_envio_archivo)) {
+                $expediente->estado_contrato_id = 7; // Reemplazar por el ID real de 'Archivado'
+
+            } elseif (!empty($expediente->f_aprobacion_sec_gen)) {
+                $expediente->estado_contrato_id = 6; // Reemplazar por el ID real de 'Finalizado'
+
+            } elseif (!empty($expediente->f_inicio_contrato)) {
+                $expediente->estado_contrato_id = 5; // Reemplazar por el ID real de 'En ejecución'
+
+            } elseif (!empty($expediente->f_firma_director_tdr)) {
+                $expediente->estado_contrato_id = 4; // Reemplazar por el ID real de 'En trámite'
+
+            } elseif (!empty($expediente->f_ingreso_area)) {
+                $expediente->estado_contrato_id = 3; // Reemplazar por el ID real de 'En análisis'
+
+            } elseif (!empty($expediente->f_ingreso_cfi)) {
+                $expediente->estado_contrato_id = 2; // Reemplazar por el ID real de 'Ingresado al CFI'
+
+            } else {
+                $expediente->estado_contrato_id = 1; // Reemplazar por el ID real de 'Borrador / Sin Ingresar'
+            }
+        // 2. CÁLCULO DEL ESTADO (Cascada de fin a inicio)
+/*             if (!empty($expediente->estado_excepcion)) {
                 $expediente->estado = $expediente->estado_excepcion;
                 return;
             }
@@ -58,8 +88,7 @@ class Expediente extends Model
             if (!empty($expediente->f_envio_archivo)) {
                 $expediente->estado = 'Archivado';
 
-            } elseif (!empty($expediente->f_fin_contrato) && now()->startOfDay()->greaterThanOrEqualTo($expediente->f_fin_contrato)) {
-                // Si ya pasó la fecha de fin de contrato
+            } elseif (!empty($expediente->f_aprobacion_sec_gen)) {
                 $expediente->estado = 'Finalizado';
 
             } elseif (!empty($expediente->f_inicio_contrato)) {
@@ -76,7 +105,7 @@ class Expediente extends Model
 
             } else {
                 $expediente->estado = 'Borrador / Sin Ingresar';
-            }
+            } */
         });
     }
 

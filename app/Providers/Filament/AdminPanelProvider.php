@@ -28,9 +28,26 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->registration(\App\Filament\Pages\Auth\RegistroTecnico::class)
+
+            // --- INICIO DE PERSONALIZACIÓN VISUAL ---
+
+            ->brandName('Gestión CFI') // El título de la pestaña del navegador
+
+            // Los logos (asegurate de poner las imágenes en la carpeta public/images/)
+            ->brandLogo(asset('images/logo-cfi.png'))
+            ->brandLogoHeight('3rem') // Ajustá este valor si el logo se ve muy chico o muy grande
+            ->favicon(asset('images/favicon.png'))
+
+            // Desactivamos el modo oscuro si el logo del CFI no tiene versión para fondo negro
+            ->darkMode(false)
+
             ->colors([
-                'primary' => Color::Amber,
+                // Cambiá este código Hexadecimal por el azul o el color oficial que usen
+                'primary' => \Filament\Support\Colors\Color::hex('#0055A5'),
             ])
+
+            // --- FIN DE PERSONALIZACIÓN VISUAL ---
+
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([

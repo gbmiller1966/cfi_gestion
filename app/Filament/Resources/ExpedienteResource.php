@@ -187,8 +187,9 @@ class ExpedienteResource extends Resource
                                                         }
                                                     }),
                                                 Forms\Components\DatePicker::make('fecha_limite')
-                                                    ->label('Fecha Pactada')
-                                                    ->readOnly(),
+                                                    ->label('Fecha Pactada'),
+                                                    //->readOnly()
+                                                    //->dehydrated(),
                                             ])->columns(3)->columnSpanFull(),
                                     ]),
                             ]),
@@ -269,7 +270,21 @@ class ExpedienteResource extends Resource
                 Tables\Columns\TextColumn::make('gde_numero')->label('GDE')->searchable(),
                 Tables\Columns\TextColumn::make('titulo')->label('Título')->limit(50)->searchable(),
 
-                Tables\Columns\TextColumn::make('estado')
+                Tables\Columns\TextColumn::make('estadoContrato.estado') // Asumiendo que la columna de tu tabla maestra se llama 'nombre'
+                    ->label('Estado')
+                    ->badge()
+                    // Si querés mantener los colores, podés hacer un match con el ID o el nombre:
+                    ->color(fn (string $state): string => match ($state) {
+                        'Borrador / Sin ingresar' => 'gray',
+                        'Ingresado al CFI' => 'blue',
+                        'En análisis' => 'info',
+                        'En trámite' => 'warning',
+                        'En ejecución' => 'success',
+                        'Finalizado' => 'info',
+                        'Archivado' => 'danger',
+                        default => 'warning',
+                }),
+/*                 Tables\Columns\TextColumn::make('estado')
                     ->label('Estado')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -284,10 +299,10 @@ class ExpedienteResource extends Resource
                         default => 'gray',
                     })
                     ->sortable()
-                    ->searchable(),
+                    ->searchable(), */
 
                 // Como en tu tabla users tenés 'nombre' y 'apellido', lo mostramos así
-                Tables\Columns\TextColumn::make('user.nombre')->label('Técnico')
+                Tables\Columns\TextColumn::make('tecnico.usuario')->label('Técnico')
                 ->hidden(fn () => auth()->user()->hasRole('Técnico')),
                 Tables\Columns\TextColumn::make('provincia.provincia')->label('Provincia'),
             ])

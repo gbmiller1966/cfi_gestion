@@ -32,7 +32,7 @@ return new class extends Migration
             $table->foreignId('asignacion_id')->constrained('asignaciones_presupuestarias');
             $table->foreignId('tema_id')->constrained('temas_estrategicos');
             $table->foreignId('tipo_contrato_id')->constrained('tipos_contrato');
-            $table->foreignId('estado_contrato_id')->constrained('estados_contrato');
+            $table->foreignId('estado_contrato_id')->nullable()->constrained('estados_contrato');
 
 
             // --- Circuito de Tiempos (16 Etapas) ---
