@@ -17,6 +17,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use App\Filament\Pages\Auth\Register;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -26,8 +27,19 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->login(\App\Filament\Pages\Auth\UnifiedLogin::class) // <-- PONÉ ESTO ACÁ
+            ->registration() // <-- ¡AGREGÁ ESTA LÍNEA ACÁ!
+            ->passwordReset()
+            ->brandLogo(asset('images/logo-cfi.png'))
+            ->brandLogoHeight('3rem') // Podés jugar con este valor (2rem, 4rem) hasta que quede del tamaño ideal
+            ->colors([
+                'primary' => \Filament\Support\Colors\Color::Amber,
+            ])
+/*             ->default()
+            ->id('admin')
+            ->path('admin')
             ->login()
-            ->registration(\App\Filament\Pages\Auth\RegistroTecnico::class)
+            ->registration(\App\Filament\Pages\Auth\RegistroTecnico::class) */
 
             // --- INICIO DE PERSONALIZACIÓN VISUAL ---
 
@@ -71,6 +83,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->registration(Register::class);
     }
 }

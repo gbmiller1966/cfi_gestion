@@ -28,22 +28,24 @@ class TecnicoPanelProvider extends PanelProvider
             ->id('tecnico')
             ->path('tecnico') // El técnico va a entrar por misistema.com/tecnico
             ->login()
+            ->brandLogo(asset('images/logo-cfi.png'))
+            ->brandLogoHeight('3rem') // Podés jugar con este valor (2rem, 4rem) hasta que quede del tamaño ideal
             ->colors([
                 'primary' => \Filament\Support\Colors\Color::Blue, // Podés ponerle otro color para que se den cuenta rápido dónde están
             ])
             // LA MAGIA DE LA VISTA ACÁ:
-            ->topNavigation() 
-            ->maxContentWidth(MaxWidth::Full) 
+            ->topNavigation()
+            ->maxContentWidth(MaxWidth::Full)
 
             // LA MAGIA DE RECICLAR CÓDIGO:
             // Le decimos que lea EXACTAMENTE la misma carpeta de recursos que el panel Admin.
             // Así, el ExpedienteResource que ya programamos sirve para los dos paneles.
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
-            
-            // Si querés que el técnico no vea el "Escritorio" y vaya directo a Expedientes, 
+
+            // Si querés que el técnico no vea el "Escritorio" y vaya directo a Expedientes,
             // comentá o borrá esta línea de abajo:
-            // ->pages([Pages\Dashboard::class]) 
+            // ->pages([Pages\Dashboard::class])
 
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([

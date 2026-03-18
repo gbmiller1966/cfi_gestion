@@ -266,142 +266,167 @@ class ExpedienteResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+        ->headerActions(
+            auth()->user()->hasRole('Director') ? [] : [Tables\Actions\CreateAction::make()]
+        )
         ->columns([
-/*             Tables\Columns\TextColumn::make('gde_numero')
+            // --- COLUMNAS BÁSICAS (Visibles para todos) ---
+            Tables\Columns\TextColumn::make('gde_numero')
                 ->label('GDE')
                 ->searchable()
-                ->sortable(), */
+                ->sortable(),
 
             Tables\Columns\TextColumn::make('titulo')
                 ->label('Título')
                 ->searchable()
-                ->wrap() // Esto ayuda a que si el título es muy largo, baje de renglón y no te deforme la tabla
-                ->words(10), // Limita a 10 palabras para no ocupar toda la pantalla
+                ->wrap()
+                ->words(10),
 
-            Tables\Columns\TextColumn::make('contraparte.apellido') // o contraparte.nombre
-                ->label('Contraparte')
+            Tables\Columns\TextColumn::make('provincia.provincia')
+                ->label('Provincia')
+                ->sortable(),
+
+            // --- COLUMNA TÉCNICO (Oculta para el técnico, visible para Director/Admin) ---
+            Tables\Columns\TextColumn::make('tecnico.apellido')
+                ->label('Técnico a cargo')
+                ->hidden(fn () => auth()->user()->hasRole('Técnico'))
                 ->searchable(),
 
-            // --- MAGIA DE WHATSAPP PARA CONTRAPARTE ---
-            Tables\Columns\TextColumn::make('contraparte.celular') // Le avisamos que busque en la relación
-                ->label('Celular')
-                ->icon('heroicon-m-chat-bubble-oval-left') 
-                ->color('success') 
-                ->url(function ($record) {
-                    // Viajamos a la relación para ver si hay un celular. El ?-> evita errores si la contraparte es null
-                    if (! $record->contraparte?->celular) return null;
-                    
-                    // Limpiamos el número accediendo al celular de la contraparte
-                    $numeroLimpio = preg_replace('/[^0-9]/', '', $record->contraparte->celular);
-                    return "https://wa.me/{$numeroLimpio}";
+            Tables\Columns\TextColumn::make('monto_convenido')
+                ->label('Monto Convenido')
+                ->money('ARS')
+                ->sortable()
+                ->visible(fn () => !auth()->user()->hasRole('Técnico')),
+
+            Tables\Columns\TextColumn::make('estadoContrato.estado')
+                ->label('Estado')
+                ->badge()
+                ->color(fn (string $state): string => match ($state) {
+                    'En ejecución' => 'success',
+                    'Finalizado' => 'info',
+                    'Archivado' => 'gray',
+                    default => 'warning',
+                }),
+
+            // --- SECCIÓN DE FECHAS (Solo Director/Admin) ---
+            // Usamos toggleable() para que puedan ocultarlas si la tabla queda muy ancha
+            Tables\Columns\TextColumn::make('f_ingreso_cfi')
+                ->label('Ingreso CFI')
+                ->date('d/m/Y')
+                ->toggleable(isToggledHiddenByDefault: true)
+                ->visible(fn () => auth()->user()->hasAnyRole(['Admin', 'Director'])),
+
+            Tables\Columns\TextColumn::make('f_ingreso_area')
+                ->label('Ingreso Área')
+                ->date('d/m/Y')
+                ->toggleable(isToggledHiddenByDefault: true)
+                ->visible(fn () => auth()->user()->hasAnyRole(['Admin', 'Director'])),
+
+            Tables\Columns\TextColumn::make('f_firma_director_tdr')
+                ->label('Firma Dirección')
+                ->date('d/m/Y')
+                ->toggleable(isToggledHiddenByDefault: true)
+                ->visible(fn () => auth()->user()->hasAnyRole(['Admin', 'Director'])),
+
+            Tables\Columns\TextColumn::make('f_inicio_contrato')
+                ->label('Inicio Contrato')
+                ->date('d/m/Y')
+                ->toggleable(isToggledHiddenByDefault: true)
+                ->visible(fn () => auth()->user()->hasAnyRole(['Admin', 'Director'])),
+
+            // --- CÁLCULOS DE TIEMPOS DE GESTIÓN (Días) ---
+            // 1. Desde ingreso CFI hasta ingreso al Área
+            Tables\Columns\TextColumn::make('dias_cfi_area')
+                ->label('Días (CFI-Área)')
+                ->state(function ($record) {
+                    if (!$record->f_ingreso_cfi || !$record->f_ingreso_area) return '-';
+                    $dias = Carbon::parse($record->f_ingreso_cfi)->diffInDays(Carbon::parse($record->f_ingreso_area));
+                return round($dias) . ' d.';
                 })
-                ->openUrlInNewTab(),
+                ->visible(fn () => auth()->user()->hasAnyRole(['Admin', 'Director'])),
 
-                Tables\Columns\TextColumn::make('proveedores.razon_social')
-                    ->label('Proveedor')
-                    ->searchable()
-                    ->listWithLineBreaks() // Si hay más de uno, los pone uno abajo del otro
-                    ->bulleted(), // Le agrega viñetas para que quede más prolijo
+            // 2. Desde ingreso Área hasta Firma Dirección
+            Tables\Columns\TextColumn::make('dias_area_firma')
+                ->label('Días (Área-Dir)')
+                ->state(function ($record) {
+                    if (!$record->f_ingreso_area || !$record->f_firma_director_tdr) return '-';
+                    $dias = Carbon::parse($record->f_ingreso_area)->diffInDays(Carbon::parse($record->f_firma_director_tdr));
+                    return round($dias) . ' d.';
+                })
+                ->visible(fn () => auth()->user()->hasAnyRole(['Admin', 'Director'])),
 
-                // --- MAGIA DE WHATSAPP PARA PROVEEDOR ---
-                Tables\Columns\TextColumn::make('proveedores.contacto_celular')
-                    ->label('Cel. Proveedor')
-                    ->icon('heroicon-m-chat-bubble-oval-left')
-                    ->color('success')
-                    ->listWithLineBreaks()
-                    ->url(function ($record) {
-                        // Como es una relación múltiple, buscamos al primer proveedor de la lista
-                        $primerProveedor = $record->proveedores->first();
-                        
-                        // Verificamos que exista el proveedor y que tenga el celular cargado
-                        if (! $primerProveedor || ! $primerProveedor->contacto_celular) {
-                            return null;
-                        }
-                        
-                        // Limpiamos el número de ese primer proveedor
-                        $numeroLimpio = preg_replace('/[^0-9]/', '', $primerProveedor->contacto_celular);
-                        return "https://wa.me/{$numeroLimpio}";
-                    })
-                    ->openUrlInNewTab(),
-            
-            // Como en tu tabla users tenés 'nombre' y 'apellido', lo mostramos así
-            Tables\Columns\TextColumn::make('tecnico.usuario')->label('Técnico')
-                ->hidden(fn () => auth()->user()->hasRole('Técnico')),
-                Tables\Columns\TextColumn::make('provincia.provincia')->label('Provincia'),
+            // 3. Desde Firma Dirección hasta Inicio Contrato
+            Tables\Columns\TextColumn::make('dias_firma_contrato')
+                ->label('Días (Firma-Contrato)')
+                ->state(function ($record) {
+                    if (!$record->f_firma_director_tdr || !$record->f_inicio_contrato) return '-';
+                    $dias = Carbon::parse($record->f_firma_director_tdr)->diffInDays(Carbon::parse($record->f_inicio_contrato));
+                    return round($dias) . ' d.';
+                })
+                ->visible(fn () => auth()->user()->hasAnyRole(['Admin', 'Director'])),
         ])
-/*             ->columns([
-                Tables\Columns\TextColumn::make('gde_numero')->label('GDE')->searchable(),
-                Tables\Columns\TextColumn::make('titulo')->label('Título')->limit(50)->searchable(),
+        ->filters([
+            // Filtro por Estado
+            Tables\Filters\SelectFilter::make('estado_contrato_id')
+                ->label('Estado')
+                ->relationship('estadoContrato', 'estado')
+                ->multiple()
+                ->preload(),
 
-                Tables\Columns\TextColumn::make('estadoContrato.estado') // Asumiendo que la columna de tu tabla maestra se llama 'nombre'
-                    ->label('Estado')
-                    ->badge()
-                    // Si querés mantener los colores, podés hacer un match con el ID o el nombre:
-                    ->color(fn (string $state): string => match ($state) {
-                        'Borrador / Sin ingresar' => 'gray',
-                        'Ingresado al CFI' => 'blue',
-                        'En análisis' => 'info',
-                        'En trámite' => 'warning',
-                        'En ejecución' => 'success',
-                        'Finalizado' => 'info',
-                        'Archivado' => 'danger',
-                        default => 'warning',
-                }), */
-/*                 Tables\Columns\TextColumn::make('estado')
-                    ->label('Estado')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'Ingresado al CFI' => 'gray',
-                        'En análisis' => 'info', // Azul
-                        'En trámite' => 'warning', // Amarillo/Naranja
-                        'En ejecución' => 'primary', // Color principal de Filament
-                        'Finalizado' => 'success', // Verde
-                        'Archivado' => 'gray', // Gris
-                        'Dado de baja' => 'danger', // Rojo
-                        'Rescindido' => 'danger', // Rojo
-                        default => 'gray',
-                    })
-                    ->sortable()
-                    ->searchable(), */
+            // Filtro por Provincia
+            Tables\Filters\SelectFilter::make('provincia_id')
+                ->label('Provincia')
+                ->relationship('provincia', 'provincia')
+                ->searchable()
+                ->preload(),
 
-            ->filters([
-                // Acá agregaremos filtros más adelante
-                // Filtro por Estado (Usando la relación que arreglamos hoy)
-                Tables\Filters\SelectFilter::make('estado_contrato_id')
-                    ->label('Estado')
-                    ->relationship('estadoContrato', 'estado')
-                    ->multiple() // Opcional: le permite al técnico tildar "En ejecución" y "Finalizado" a la vez
-                    ->preload(), // Carga las opciones rápido
-
-                // Filtro por Provincia
-                Tables\Filters\SelectFilter::make('provincia_id')
-                    ->label('Provincia')
-                    ->relationship('provincia', 'provincia') // Ajustá si tu relación se llama distinto
-                    ->searchable() // Te pone un buscador por si son muchas
-                    ->preload(),
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+            // Filtro por Técnico (Súper útil para el Director)
+            Tables\Filters\SelectFilter::make('user_id')
+                ->label('Técnico')
+                ->relationship('tecnico', 'apellido')
+                ->searchable()
+                ->preload()
+                ->visible(fn () => auth()->user()->hasAnyRole(['Admin', 'Director'])),
+        ])
+        ->actions([
+            Tables\Actions\DeleteAction::make()->visible(fn() => auth()->user()->hasRole('Admin')),
+            Tables\Actions\EditAction::make()->visible(fn() => auth()->user()->hasRole('Admin')),
+        ])
+        ->bulkActions([
+            Tables\Actions\BulkActionGroup::make([
+                // Solo el Admin puede borrar muchos expedientes de una
+            Tables\Actions\DeleteBulkAction::make()
+                ->visible(fn () => auth()->user()->hasRole('Admin')),
+            ]),
+        ]);
     }
 
     // EL FILTRO MÁGICO PARA QUE EL TÉCNICO VEA SOLO LO SUYO
-    public static function getEloquentQuery(): Builder
+public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
         $user = auth()->user();
 
-        // Si es Admin, ve todo sin restricciones
+        // 1. Admin: Ve TODO el CFI
         if ($user->hasRole('Admin')) {
             return $query;
         }
 
-        // Si es Técnico, forzamos a que solo traiga sus expedientes
+        // 2. Director: Ve los expedientes de todos los técnicos que pertenezcan a su DIRECCIÓN
+        if ($user->hasRole('Director')) {
+            return $query->whereHas('tecnico', function ($q) use ($user) {
+                $q->where('direccion_id', $user->direccion_id);
+            });
+        }
+
+        // 3. Jefe de Área: Ve los expedientes de todos los técnicos que pertenezcan a su ÁREA
+        if ($user->hasRole('Jefe de Área')) {
+            return $query->whereHas('tecnico', function ($q) use ($user) {
+                $q->where('area_id', $user->area_id);
+            });
+        }
+
+        // 4. Técnico (el rol por defecto): Solo ve los suyos
         return $query->where('user_id', $user->id);
     }
 

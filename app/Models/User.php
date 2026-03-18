@@ -5,26 +5,16 @@ namespace App\Models;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasName;
 use Filament\Panel;
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-
-use Spatie\Permission\Traits\HasRoles; // <-- 1. Agrega esta importación
-
-
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements FilamentUser, HasName
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, HasRoles; // <-- 2. Agrega HasRoles aquí
+    use HasFactory, Notifiable, HasRoles;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'nombre',
         'apellido',
@@ -36,21 +26,11 @@ class User extends Authenticatable implements FilamentUser, HasName
         'area_id',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -59,24 +39,26 @@ class User extends Authenticatable implements FilamentUser, HasName
         ];
     }
 
-    //public function canAccessPanel(Panel $panel): bool
-    //{
-        // Esto verifica que solo los usuarios con rol 'Admin' puedan entrar
-        // return true; $this->hasRole('Admin', 'Técnico', 'Director', 'Jefe de Area');
-        //return true;//$this->roles()->exists();
-        //return $this->hasAnyRole(['Admin', 'Técnico', 'Director', 'Jefe de Área']);
-    //}
+    // --- MAGIA 1: ASIGNACIÓN AUTOMÁTICA DE ROL ---
+    protected static function booted(): void
+    {
+        static::created(function ($user) {
+            // Si el usuario se acaba de registrar y no tiene roles, le clavamos "Técnico"
+            if ($user->roles()->count() === 0) {
+                $user->assignRole('Técnico');
+            }
+        });
+    }
 
     public function canAccessPanel(Panel $panel): bool
     {
-        // Si intentan entrar a misistema.com/admin
+        // --- MAGIA 2: EL DIRECTOR ENTRA POR LA PUERTA PRINCIPAL ---
         if ($panel->getId() === 'admin') {
-            return $this->hasRole('Admin');
+            return $this->hasAnyRole(['Admin', 'Director']);
         }
 
-        // Si intentan entrar a misistema.com/tecnico
         if ($panel->getId() === 'tecnico') {
-            return $this->hasRole('Técnico');
+            return $this->hasAnyRole(['Técnico', 'Tecnico', 'tecnico']);
         }
 
         return false;
@@ -84,17 +66,14 @@ class User extends Authenticatable implements FilamentUser, HasName
 
     public function getFilamentName(): string
     {
-        // Esto mostrará "Guillermo Admin" en la esquina superior
         return "{$this->nombre} {$this->apellido}";
     }
 
-    // Relación: Un usuario pertenece a una Dirección
     public function direccion()
     {
         return $this->belongsTo(Direccion::class);
     }
 
-    // Relación: Un usuario pertenece a un Área
     public function area()
     {
         return $this->belongsTo(Area::class);
