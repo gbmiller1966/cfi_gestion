@@ -96,5 +96,17 @@ class TablasMaestrasSeeder extends Seeder
             ['id' => 3, 'informe_maestro' => 'Informe Final', 'created_at' => now(), 'updated_at' => now()],
         ];
         DB::table('informes_maestros')->insert($informes);
+
+        // 9. Estados de Contratos
+        $estados = [
+            ['id' => 1, 'nombre' => 'Borrador / Sin Ingresar', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 2, 'nombre' => 'Ingresado al CFI', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 3, 'nombre' => 'En análisis', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 4, 'nombre' => 'En trámite', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 5, 'nombre' => 'En ejecución', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 6, 'nombre' => 'Finalizado', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 7, 'nombre' => 'Archivado', 'created_at' => now(), 'updated_at' => now()],
+        ];
+        DB::table('estados_contrato')->insert($estados);
     }
 }

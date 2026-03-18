@@ -266,7 +266,70 @@ class ExpedienteResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
+        ->columns([
+/*             Tables\Columns\TextColumn::make('gde_numero')
+                ->label('GDE')
+                ->searchable()
+                ->sortable(), */
+
+            Tables\Columns\TextColumn::make('titulo')
+                ->label('Título')
+                ->searchable()
+                ->wrap() // Esto ayuda a que si el título es muy largo, baje de renglón y no te deforme la tabla
+                ->words(10), // Limita a 10 palabras para no ocupar toda la pantalla
+
+            Tables\Columns\TextColumn::make('contraparte.apellido') // o contraparte.nombre
+                ->label('Contraparte')
+                ->searchable(),
+
+            // --- MAGIA DE WHATSAPP PARA CONTRAPARTE ---
+            Tables\Columns\TextColumn::make('contraparte.celular') // Le avisamos que busque en la relación
+                ->label('Celular')
+                ->icon('heroicon-m-chat-bubble-oval-left') 
+                ->color('success') 
+                ->url(function ($record) {
+                    // Viajamos a la relación para ver si hay un celular. El ?-> evita errores si la contraparte es null
+                    if (! $record->contraparte?->celular) return null;
+                    
+                    // Limpiamos el número accediendo al celular de la contraparte
+                    $numeroLimpio = preg_replace('/[^0-9]/', '', $record->contraparte->celular);
+                    return "https://wa.me/{$numeroLimpio}";
+                })
+                ->openUrlInNewTab(),
+
+                Tables\Columns\TextColumn::make('proveedores.razon_social')
+                    ->label('Proveedor')
+                    ->searchable()
+                    ->listWithLineBreaks() // Si hay más de uno, los pone uno abajo del otro
+                    ->bulleted(), // Le agrega viñetas para que quede más prolijo
+
+                // --- MAGIA DE WHATSAPP PARA PROVEEDOR ---
+                Tables\Columns\TextColumn::make('proveedores.contacto_celular')
+                    ->label('Cel. Proveedor')
+                    ->icon('heroicon-m-chat-bubble-oval-left')
+                    ->color('success')
+                    ->listWithLineBreaks()
+                    ->url(function ($record) {
+                        // Como es una relación múltiple, buscamos al primer proveedor de la lista
+                        $primerProveedor = $record->proveedores->first();
+                        
+                        // Verificamos que exista el proveedor y que tenga el celular cargado
+                        if (! $primerProveedor || ! $primerProveedor->contacto_celular) {
+                            return null;
+                        }
+                        
+                        // Limpiamos el número de ese primer proveedor
+                        $numeroLimpio = preg_replace('/[^0-9]/', '', $primerProveedor->contacto_celular);
+                        return "https://wa.me/{$numeroLimpio}";
+                    })
+                    ->openUrlInNewTab(),
+            
+            // Como en tu tabla users tenés 'nombre' y 'apellido', lo mostramos así
+            Tables\Columns\TextColumn::make('tecnico.usuario')->label('Técnico')
+                ->hidden(fn () => auth()->user()->hasRole('Técnico')),
+                Tables\Columns\TextColumn::make('provincia.provincia')->label('Provincia'),
+        ])
+/*             ->columns([
                 Tables\Columns\TextColumn::make('gde_numero')->label('GDE')->searchable(),
                 Tables\Columns\TextColumn::make('titulo')->label('Título')->limit(50)->searchable(),
 
@@ -283,7 +346,7 @@ class ExpedienteResource extends Resource
                         'Finalizado' => 'info',
                         'Archivado' => 'danger',
                         default => 'warning',
-                }),
+                }), */
 /*                 Tables\Columns\TextColumn::make('estado')
                     ->label('Estado')
                     ->badge()
@@ -301,13 +364,21 @@ class ExpedienteResource extends Resource
                     ->sortable()
                     ->searchable(), */
 
-                // Como en tu tabla users tenés 'nombre' y 'apellido', lo mostramos así
-                Tables\Columns\TextColumn::make('tecnico.usuario')->label('Técnico')
-                ->hidden(fn () => auth()->user()->hasRole('Técnico')),
-                Tables\Columns\TextColumn::make('provincia.provincia')->label('Provincia'),
-            ])
             ->filters([
                 // Acá agregaremos filtros más adelante
+                // Filtro por Estado (Usando la relación que arreglamos hoy)
+                Tables\Filters\SelectFilter::make('estado_contrato_id')
+                    ->label('Estado')
+                    ->relationship('estadoContrato', 'estado')
+                    ->multiple() // Opcional: le permite al técnico tildar "En ejecución" y "Finalizado" a la vez
+                    ->preload(), // Carga las opciones rápido
+
+                // Filtro por Provincia
+                Tables\Filters\SelectFilter::make('provincia_id')
+                    ->label('Provincia')
+                    ->relationship('provincia', 'provincia') // Ajustá si tu relación se llama distinto
+                    ->searchable() // Te pone un buscador por si son muchas
+                    ->preload(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

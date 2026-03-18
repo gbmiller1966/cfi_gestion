@@ -59,11 +59,27 @@ class User extends Authenticatable implements FilamentUser, HasName
         ];
     }
 
-    public function canAccessPanel(Panel $panel): bool
-    {
+    //public function canAccessPanel(Panel $panel): bool
+    //{
         // Esto verifica que solo los usuarios con rol 'Admin' puedan entrar
         // return true; $this->hasRole('Admin', 'Técnico', 'Director', 'Jefe de Area');
-        return $this->roles()->exists();
+        //return true;//$this->roles()->exists();
+        //return $this->hasAnyRole(['Admin', 'Técnico', 'Director', 'Jefe de Área']);
+    //}
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        // Si intentan entrar a misistema.com/admin
+        if ($panel->getId() === 'admin') {
+            return $this->hasRole('Admin');
+        }
+
+        // Si intentan entrar a misistema.com/tecnico
+        if ($panel->getId() === 'tecnico') {
+            return $this->hasRole('Técnico');
+        }
+
+        return false;
     }
 
     public function getFilamentName(): string
