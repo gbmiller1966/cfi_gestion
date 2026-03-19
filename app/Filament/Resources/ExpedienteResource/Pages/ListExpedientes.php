@@ -35,22 +35,60 @@ class ListExpedientes extends ListRecords
         ];
     }
 
-    public function getHeaderWidgets(): array
+public function getHeaderWidgets(): array
 {
-    // Si es Director, inyectamos un poquito de CSS para esconder el menú
     if (auth()->user()->hasRole('Director')) {
+        // 1. Inyectamos el Logo
+        \Filament\Support\Facades\FilamentView::registerRenderHook(
+            'panels::topbar.start',
+            fn () => new \Illuminate\Support\HtmlString("
+                <div class='flex items-center h-full ps-4'>
+                    <img src='" . asset('images/logo-cfi.png') . "' alt='Logo' style='height: 2.5rem; width: auto;'>
+                </div>
+            ")
+        );
+
+        // 2. Ajustamos el CSS para separar el logo del perfil
         \Filament\Support\Facades\FilamentView::registerRenderHook(
             'panels::head.end',
             fn () => new \Illuminate\Support\HtmlString("
                 <style>
-                    .fi-sidebar { display: none !important; }
+                    /* Ocultamos sidebar y botón de menú */
+                    .fi-sidebar, .fi-topbar-start button { display: none !important; }
+
+                    /* Pantalla completa */
                     .fi-main-ctn { margin-left: 0 !important; }
-                    .fi-topbar-start { display: none !important; } /* Oculta el botón de hamburguesa */
+
+                    /* Forzamos que la barra ocupe todo el ancho y separe los elementos */
+                    .fi-topbar nav {
+                        display: flex !important;
+                        justify-content: space-between !important;
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        padding: 0 1rem !important;
+                    }
+
+                    /* Aseguramos que el logo y el perfil tengan su espacio */
+                    .fi-topbar-start, .fi-topbar-end {
+                        display: flex !important;
+                        align-items: center !important;
+                    }
+
+                    .fi-topbar {
+                        display: flex !important;
+                        height: 4rem !important;
+                        background-color: white !important;
+                        border-bottom: 1px solid #e5e7eb !important;
+                    }
                 </style>
             ")
         );
     }
 
-    return [];
+    return [
+        \App\Filament\Resources\ExpedienteResource\Widgets\ExpedientesStats::class,
+        \App\Filament\Resources\ExpedienteResource\Widgets\EstadoExpedientesChart::class,
+    ];
 }
 }
+

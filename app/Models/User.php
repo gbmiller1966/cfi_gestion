@@ -69,6 +69,17 @@ class User extends Authenticatable implements FilamentUser, HasName
         return "{$this->nombre} {$this->apellido}";
     }
 
+    public function getRedirectUrl(): string
+    {
+        // Si el usuario es Director, lo mandamos directo a la tabla de expedientes
+        if ($this->hasRole('Director')) {
+            return '/admin/expedientes';
+        }
+
+        // Si es Admin, que siga entrando al Escritorio (Dashboard) normal
+        return '/admin';
+    }
+
     public function direccion()
     {
         return $this->belongsTo(Direccion::class);

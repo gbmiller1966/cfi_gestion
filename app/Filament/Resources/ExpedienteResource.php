@@ -266,9 +266,9 @@ class ExpedienteResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-        ->headerActions(
+/*         ->headerActions(
             auth()->user()->hasRole('Director') ? [] : [Tables\Actions\CreateAction::make()]
-        )
+        ) */
         ->columns([
             // --- COLUMNAS BÁSICAS (Visibles para todos) ---
             Tables\Columns\TextColumn::make('gde_numero')

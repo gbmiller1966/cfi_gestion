@@ -27,7 +27,11 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login(\App\Filament\Pages\Auth\UnifiedLogin::class) // <-- PONÉ ESTO ACÁ
+            ->login(\App\Filament\Pages\Auth\UnifiedLogin::class)
+            ->homeUrl(fn () => auth()->user()?->hasRole('Director') ? '/admin/expedientes' : '/admin')
+            ->userMenuItems([
+                'logout' => \Filament\Navigation\MenuItem::make()->label('Salir'),
+            ])
             ->registration() // <-- ¡AGREGÁ ESTA LÍNEA ACÁ!
             ->passwordReset()
             ->brandLogo(asset('images/logo-cfi.png'))
@@ -63,7 +67,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                \App\Filament\Pages\Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
@@ -83,7 +87,6 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ])
-            ->registration(Register::class);
+            ]);
     }
 }
