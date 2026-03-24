@@ -98,12 +98,21 @@ class ExpedienteResource extends Resource
 
                                 Forms\Components\Section::make('Ingreso y Derivación')
                                     ->schema([
-                                        Forms\Components\DateTimePicker::make('f_ingreso_cfi')
-                                            ->label('Ingreso a Coord. CFI'),
-                                        Forms\Components\DateTimePicker::make('f_ingreso_area')
-                                            ->label('Derivación al Área'),
-                                        Forms\Components\DateTimePicker::make('f_derivacion_tecnico')
-                                            ->label('Derivación al Técnico'),
+                                        Forms\Components\DatePicker::make('f_ingreso_cfi')
+                                            ->label('Ingreso a Coord. CFI')
+                                            ->native(false) // Esto hace que el picker sea más amigable
+                                            ->displayFormat('d/m/Y')
+                                            ->format('Y-m-d'),
+                                        Forms\Components\DatePicker::make('f_ingreso_area')
+                                            ->label('Derivación al Área')
+                                            ->native(false) // Esto hace que el picker sea más amigable
+                                            ->displayFormat('d/m/Y')
+                                            ->format('Y-m-d'),
+                                        Forms\Components\DatePicker::make('f_derivacion_tecnico')
+                                            ->label('Derivación al Técnico')
+                                            ->native(false) // Esto hace que el picker sea más amigable
+                                            ->displayFormat('d/m/Y')
+                                            ->format('Y-m-d'),
                                     ])->columns(3),
 
                                 Forms\Components\Section::make('Actores y Montos')
@@ -133,6 +142,12 @@ class ExpedienteResource extends Resource
                                             ->label('Monto Convenido')
                                             ->numeric()
                                             ->prefix('$'),
+                                        Forms\Components\TextInput::make('monto_imputado')
+                                            ->label('Monto Imputado Total')
+                                            ->numeric()
+                                            ->prefix('$')
+                                            ->readOnly() // Se calcula solo, el usuario no lo toca
+                                            ->placeholder('Se calculará automáticamente al guardar'),
                                     ])->columns(3),
                             ]),
 
@@ -143,25 +158,43 @@ class ExpedienteResource extends Resource
                             ->schema([
                                 Forms\Components\Section::make('Términos de Referencia (TDR)')
                                     ->schema([
-                                        Forms\Components\DateTimePicker::make('f_elevacion_tdr')
-                                            ->label('Elevación TDR (Jefe)'),
-                                        Forms\Components\DateTimePicker::make('f_firma_jefe_tdr')
-                                            ->label('Firma Jefe TDR'),
-                                        Forms\Components\DateTimePicker::make('f_firma_director_tdr')
-                                            ->label('Firma Director TDR'),
+                                        Forms\Components\DatePicker::make('f_elevacion_tdr')
+                                            ->label('Elevación TDR (Jefe)')
+                                            ->native(false) // Esto hace que el picker sea más amigable
+                                            ->displayFormat('d/m/Y')
+                                            ->format('Y-m-d'),
+                                        Forms\Components\DatePicker::make('f_firma_jefe_tdr')
+                                            ->label('Firma Jefe TDR')
+                                            ->native(false) // Esto hace que el picker sea más amigable
+                                            ->displayFormat('d/m/Y')
+                                            ->format('Y-m-d'),
+                                        Forms\Components\DatePicker::make('f_firma_director_tdr')
+                                            ->label('Firma Director TDR')
+                                            ->native(false) // Esto hace que el picker sea más amigable
+                                            ->displayFormat('d/m/Y')
+                                            ->format('Y-m-d'),
                                         Forms\Components\TextInput::make('gde_tdr')
                                             ->label('N° GDE TDR'),
                                     ])->columns(2),
 
                                 Forms\Components\Section::make('Gestión del Contrato')
                                     ->schema([
-                                        Forms\Components\DateTimePicker::make('f_derivacion_compras')
-                                            ->label('Pase a Compras'),
+                                        Forms\Components\DatePicker::make('f_derivacion_compras')
+                                            ->label('Pase a Compras')
+                                            ->native(false) // Esto hace que el picker sea más amigable
+                                            ->displayFormat('d/m/Y')
+                                            ->format('Y-m-d'),
                                         Forms\Components\DatePicker::make('f_inicio_contrato')
                                             ->label('Inicio de Contrato')
+                                            ->native(false) // Esto hace que el picker sea más amigable
+                                            ->displayFormat('d/m/Y')
+                                            ->format('Y-m-d')
                                             ->live(),
                                         Forms\Components\DatePicker::make('f_fin_contrato')
                                             ->label('Fin de Contrato')
+                                            ->native(false) // Esto hace que el picker sea más amigable
+                                            ->displayFormat('d/m/Y')
+                                            ->format('Y-m-d')
                                             ->live(),
                                     ])->columns(3),
 
@@ -187,7 +220,10 @@ class ExpedienteResource extends Resource
                                                         }
                                                     }),
                                                 Forms\Components\DatePicker::make('fecha_limite')
-                                                    ->label('Fecha Pactada'),
+                                                    ->label('Fecha Pactada')
+                                                    ->native(false) // Esto hace que el picker sea más amigable
+                                                    ->displayFormat('d/m/Y')
+                                                    ->format('Y-m-d'),
                                                     //->readOnly()
                                                     //->dehydrated(),
                                             ])->columns(3)->columnSpanFull(),
@@ -201,36 +237,60 @@ class ExpedienteResource extends Resource
                             ->schema([
                                 Forms\Components\Section::make('Ingreso y Evaluaciones')
                                     ->schema([
-                                        Forms\Components\DateTimePicker::make('f_ingreso_informe_final')
-                                            ->label('Ingreso Informe Final'),
-                                        Forms\Components\DateTimePicker::make('f_aprobacion_contraparte')
-                                            ->label('Aprob. Contraparte'),
-                                        Forms\Components\DateTimePicker::make('f_aprobacion_jefe_tecnico')
-                                            ->label('Aprob. Jefe/Técnico'),
-                                        Forms\Components\DateTimePicker::make('f_aprobacion_director')
-                                            ->label('Aprob. Director'),
+                                        Forms\Components\DatePicker::make('f_ingreso_informe_final')
+                                            ->label('Ingreso Informe Final')
+                                            ->native(false) // Esto hace que el picker sea más amigable
+                                            ->displayFormat('d/m/Y')
+                                            ->format('Y-m-d'),
+                                        Forms\Components\DatePicker::make('f_aprobacion_contraparte')
+                                            ->label('Aprob. Contraparte')
+                                            ->native(false) // Esto hace que el picker sea más amigable
+                                            ->displayFormat('d/m/Y')
+                                            ->format('Y-m-d'),
+                                        Forms\Components\DatePicker::make('f_aprobacion_jefe_tecnico')
+                                            ->label('Aprob. Jefe/Técnico')
+                                            ->native(false) // Esto hace que el picker sea más amigable
+                                            ->displayFormat('d/m/Y')
+                                            ->format('Y-m-d'),
+                                        Forms\Components\DatePicker::make('f_aprobacion_director')
+                                            ->label('Aprob. Director')
+                                            ->native(false) // Esto hace que el picker sea más amigable
+                                            ->displayFormat('d/m/Y')
+                                            ->format('Y-m-d'),
                                         Forms\Components\TextInput::make('gde_aprobacion_dir')
                                             ->label('GDE Aprob. Director'),
                                     ])->columns(2),
 
                                 Forms\Components\Section::make('Resolución Final')
                                     ->schema([
-                                        Forms\Components\DateTimePicker::make('f_pase_gestion')
-                                            ->label('Pase a Gestión'),
-                                        Forms\Components\DateTimePicker::make('f_aprobacion_sec_gen')
-                                            ->label('Aprob. Sec. General'),
+                                        Forms\Components\DatePicker::make('f_pase_gestion')
+                                            ->label('Pase a Gestión')
+                                            ->native(false) // Esto hace que el picker sea más amigable
+                                            ->displayFormat('d/m/Y')
+                                            ->format('Y-m-d'),
+                                        Forms\Components\DatePicker::make('f_aprobacion_sec_gen')
+                                            ->label('Aprob. Sec. General')
+                                            ->native(false) // Esto hace que el picker sea más amigable
+                                            ->displayFormat('d/m/Y')
+                                            ->format('Y-m-d'),
                                         Forms\Components\TextInput::make('gde_sec_gen')
                                             ->label('GDE Sec. General'),
                                     ])->columns(3),
 
                                 Forms\Components\Section::make('Cierre y Archivo')
                                     ->schema([
-                                        Forms\Components\DateTimePicker::make('f_envio_biblioteca')
-                                            ->label('Envío a Biblioteca'),
+                                        Forms\Components\DatePicker::make('f_envio_biblioteca')
+                                            ->label('Envío a Biblioteca')
+                                            ->native(false) // Esto hace que el picker sea más amigable
+                                            ->displayFormat('d/m/Y')
+                                            ->format('Y-m-d'),
                                         Forms\Components\TextInput::make('gde_biblioteca')
                                             ->label('GDE Biblioteca'),
-                                        Forms\Components\DateTimePicker::make('f_envio_archivo')
-                                            ->label('Envío a Archivo'),
+                                        Forms\Components\DatePicker::make('f_envio_archivo')
+                                            ->label('Envío a Archivo')
+                                            ->native(false) // Esto hace que el picker sea más amigable
+                                            ->displayFormat('d/m/Y')
+                                            ->format('Y-m-d'),
                                         Forms\Components\TextInput::make('gde_archivo')
                                             ->label('GDE Archivo'),
                                     ])->columns(2),
@@ -292,10 +352,15 @@ class ExpedienteResource extends Resource
                 ->hidden(fn () => auth()->user()->hasRole('Técnico'))
                 ->searchable(),
 
-            Tables\Columns\TextColumn::make('monto_convenido')
+/*             Tables\Columns\TextColumn::make('monto_convenido')
                 ->label('Monto Convenido')
                 ->money('ARS')
+                ->sortable() */
+            Tables\Columns\TextColumn::make('monto_imputado')
+                ->label('Monto Imputado')
+                ->money('ARS') // O tu moneda local
                 ->sortable()
+                ->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total Imputado'))
                 ->visible(fn () => !auth()->user()->hasRole('Técnico')),
 
             Tables\Columns\TextColumn::make('estadoContrato.estado')

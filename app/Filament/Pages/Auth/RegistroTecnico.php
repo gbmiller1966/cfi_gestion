@@ -43,7 +43,7 @@ class RegistroTecnico extends BaseRegister
                 $this->getPasswordConfirmationFormComponent(),
 
                 // Estructura CFI (Obligatorios)
-                Select::make('direccion_id')
+/*                 Select::make('direccion_id')
                     ->label('Dirección')
                     ->options(Direccion::all()->pluck('direccion', 'id')) // Trae el nombre y el ID
                     ->required()
@@ -57,22 +57,29 @@ class RegistroTecnico extends BaseRegister
                     ->required()
                     ->searchable()
                     ->native(false)
-                    ->preload(),
+                    ->preload(), */
             ]);
     }
     protected function handleRegistration(array $data): \Illuminate\Database\Eloquent\Model
     {
-        // 1. Encriptamos la contraseña
-        $data['password'] = \Illuminate\Support\Facades\Hash::make($data['password']);
-        
-        // 2. Creamos el usuario y lo guardamos en una variable
-        $user = \App\Models\User::create($data);
+        $user = \App\Models\User::create([
+            'usuario' => $data['usuario'],
+            'nombre' => $data['nombre'],
+            'apellido' => $data['apellido'],
+            'email' => $data['email'],
+            'password' => \Illuminate\Support\Facades\Hash::make($data['password']),
+        ]);
 
-        // 3. ¡EL PASO MÁGICO! Le asignamos el rol inmediatamente
-        // OJO: Escribí 'Tecnico' o 'Técnico' exactamente igual a como figura en tu tabla 'roles'
+        // Asignamos rol por defecto (aunque no tenga área/dirección todavía)
         $user->assignRole('Técnico');
 
-        // 4. Devolvemos el usuario ya con su rol puesto
         return $user;
     }
+
+    protected function getRedirectUrl(): string
+    {
+        auth()->logout(); 
+        return route('filament.admin.auth.login');
+    }
+
 }

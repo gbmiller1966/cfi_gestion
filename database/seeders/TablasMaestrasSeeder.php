@@ -10,24 +10,47 @@ class TablasMaestrasSeeder extends Seeder
     public function run(): void
     {
         // 1. Regiones (No dependen de nadie)
-/*         $regiones = [
-            ['id' => 1, 'nombre' => 'Centro', 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 2, 'nombre' => 'Patagonia', 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 3, 'nombre' => 'Norte Grande', 'created_at' => now(), 'updated_at' => now()],
+         $regiones = [
+            ['id' => 1, 'region' => 'Centro', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 2, 'region' => 'Cuyo', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 3, 'region' => 'Noreste Argentino', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 4, 'region' => 'Noroeste Argentino', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 5, 'region' => 'Patagonia', 'created_at' => now(), 'updated_at' => now()],
             // Agregá el resto...
         ];
         DB::table('regiones')->insert($regiones);
 
         // 2. Provincias (Dependen de regiones)
         $provincias = [
-            ['id' => 1, 'region_id' => 1, 'provincia' => 'Córdoba', 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 2, 'region_id' => 1, 'provincia' => 'Santa Fe', 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 3, 'region_id' => 2, 'provincia' => 'Chubut', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 1, 'region_id' => 1, 'provincia' => 'Buenos Aires', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 2, 'region_id' => 4, 'provincia' => 'Catamarca', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 3, 'region_id' => 3, 'provincia' => 'Chaco', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 4, 'region_id' => 5, 'provincia' => 'Chubut', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 5, 'region_id' => 1, 'provincia' => 'Ciudad Autónoma de Buenos Aires', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 6, 'region_id' => 1, 'provincia' => 'Córdoba', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 7, 'region_id' => 3, 'provincia' => 'Corrientes', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 8, 'region_id' => 2, 'provincia' => 'Entre Ríos', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 9, 'region_id' => 3, 'provincia' => 'Formosa', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 10, 'region_id' => 4, 'provincia' => 'Jujuy', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 11, 'region_id' => 5, 'provincia' => 'La Pampa', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 12, 'region_id' => 2, 'provincia' => 'La Rioja', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 13, 'region_id' => 2, 'provincia' => 'Mendoza', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 14, 'region_id' => 3, 'provincia' => 'Misiones', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 15, 'region_id' => 5, 'provincia' => 'Neuquén', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 16, 'region_id' => 5, 'provincia' => 'Río Negro', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 17, 'region_id' => 4, 'provincia' => 'Salta', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 18, 'region_id' => 2, 'provincia' => 'San Juan', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 19, 'region_id' => 2, 'provincia' => 'San Luis', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 20, 'region_id' => 5, 'provincia' => 'Santa Cruz', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 21, 'region_id' => 1, 'provincia' => 'Santa Fe', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 22, 'region_id' => 4, 'provincia' => 'Santiago del Estero', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 23, 'region_id' => 5, 'provincia' => 'Tierra del Fuego', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 24, 'region_id' => 4, 'provincia' => 'Tucumán', 'created_at' => now(), 'updated_at' => now()],
             // Completar las 24...
         ];
         DB::table('provincias')->insert($provincias);
 
-        // 3. Localidades (Dependen de provincias)
+/*        // 3. Localidades (Dependen de provincias)
         // TIP: Como son miles, para probar te sugiero cargar solo un par, o importar un archivo .sql aparte si tenés el padrón completo.
         $localidades = [
             ['id' => 1, 'provincia_id' => 1, 'nombre' => 'Córdoba Capital', 'created_at' => now(), 'updated_at' => now()],
@@ -99,14 +122,42 @@ class TablasMaestrasSeeder extends Seeder
 
         // 9. Estados de Contratos
         $estados = [
-            ['id' => 1, 'nombre' => 'Borrador / Sin Ingresar', 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 2, 'nombre' => 'Ingresado al CFI', 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 3, 'nombre' => 'En análisis', 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 4, 'nombre' => 'En trámite', 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 5, 'nombre' => 'En ejecución', 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 6, 'nombre' => 'Finalizado', 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 7, 'nombre' => 'Archivado', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 1, 'estado' => 'Borrador / Sin Ingresar al Área', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 2, 'estado' => 'Ingresado al CFI', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 3, 'estado' => 'En análisis', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 4, 'estado' => 'En trámite', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 5, 'estado' => 'En ejecución', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 6, 'estado' => 'Finalizado', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 7, 'estado' => 'Archivado', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 8, 'estado' => 'Recisión', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 9, 'estado' => 'Dado de baja', 'created_at' => now(), 'updated_at' => now()],
         ];
         DB::table('estados_contrato')->insert($estados);
+
+        // 10. Crear usuarios
+        $usuarios = [
+            ['id' => 4, 'usuario' => 'aboix', 'nombre' => 'Andrés', 'apellido' => 'Boix', 'email' => 'aboix@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 5, 'usuario' => 'ameyer', 'nombre' => 'Alejandra', 'apellido' => 'Meyer', 'email' => 'ameyer@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 6, 'usuario' => 'arojas', 'nombre' => 'Analía', 'apellido' => 'Rojas', 'email' => 'arojas@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 7, 'usuario' => 'efrigeni', 'nombre' => 'Ezequiel', 'apellido' => 'Frigeni', 'email' => 'efrigeni@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 8, 'usuario' => 'fpascual', 'nombre' => 'Florencia', 'apellido' => 'Pascual', 'email' => 'fpascual@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 9, 'usuario' => 'gbmiller', 'nombre' => 'Guillermo', 'apellido' => 'Miller', 'email' => 'gbmiller@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 10, 'usuario' => 'jbragagnolo', 'nombre' => 'Jorgelina', 'apellido' => 'Bragagnolo', 'email' => 'jbragagnolo@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 11, 'usuario' => 'kfernandez', 'nombre' => 'Karina', 'apellido' => 'Fernández', 'email' => 'kfernandez@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 12, 'usuario' => 'ldemaria', 'nombre' => 'Leandro', 'apellido' => 'Demaria', 'email' => 'ldemaria@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 13, 'usuario' => 'mbagattin', 'nombre' => 'Marisol', 'apellido' => 'Bagattin', 'email' => 'mbagattin@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 14, 'usuario' => 'mcantarelli', 'nombre' => 'Mariana', 'apellido' => 'Cantarelli', 'email' => 'mcantarelli@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 15, 'usuario' => 'mdelvalle', 'nombre' => 'Mariana', 'apellido' => 'Del Valle', 'email' => 'mdelvalle@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 16, 'usuario' => 'mlenna', 'nombre' => 'María Concepción', 'apellido' => 'Lenna', 'email' => 'mlenna@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 17, 'usuario' => 'mlofiego', 'nombre' => 'Marcelo', 'apellido' => 'Lofiego', 'email' => 'mlofiego@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 18, 'usuario' => 'moggero', 'nombre' => 'Marcela', 'apellido' => 'Oggero', 'email' => 'moggero@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 19, 'usuario' => 'msalvatierra', 'nombre' => 'Marcela', 'apellido' => 'Salvatierra', 'email' => 'msalvatierra@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 20, 'usuario' => 'pcarlet', 'nombre' => 'Patricio', 'apellido' => 'Carlet', 'email' => 'pcarlet@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 21, 'usuario' => 'rfiguerola', 'nombre' => 'Romina', 'apellido' => 'Figuerola', 'email' => 'rfiguerola@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 22, 'usuario' => 'sespindola', 'nombre' => 'Silvia', 'apellido' => 'Espíndola', 'email' => 'sespindola@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 23, 'usuario' => 'vcueto', 'nombre' => 'Verónica', 'apellido' => 'Cueto', 'email' => 'vcueto@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 24, 'usuario' => 'vgrgic', 'nombre' => 'Victoria', 'apellido' => 'Grgic', 'email' => 'vgrgic@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1]
+        ];
+        DB::table('areas')->insert($areas);
     }
 }

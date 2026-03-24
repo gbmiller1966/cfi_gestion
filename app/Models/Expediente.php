@@ -15,28 +15,31 @@ class Expediente extends Model
     protected $guarded = ['id'];
 
     protected $casts = [
-        'f_ingreso_cfi' => 'datetime',
-        'f_ingreso_area' => 'datetime',
-        'f_derivacion_tecnico' => 'datetime',
-        'f_elevacion_tdr' => 'datetime',
-        'f_firma_jefe_tdr' => 'datetime',
-        'f_firma_director_tdr' => 'datetime',
-        'f_derivacion_compras' => 'datetime',
+        'f_ingreso_cfi' => 'date',
+        'f_ingreso_area' => 'date',
+        'f_derivacion_tecnico' => 'date',
+        'f_elevacion_tdr' => 'date',
+        'f_firma_jefe_tdr' => 'date',
+        'f_firma_director_tdr' => 'date',
+        'f_derivacion_compras' => 'date',
         'f_inicio_contrato' => 'date',
         'f_fin_contrato' => 'date',
-        'f_ingreso_informe_final' => 'datetime',
-        'f_aprobacion_contraparte' => 'datetime',
-        'f_aprobacion_jefe_tecnico' => 'datetime',
-        'f_aprobacion_director' => 'datetime',
-        'f_pase_gestion' => 'datetime',
-        'f_aprobacion_sec_gen' => 'datetime',
-        'f_envio_biblioteca' => 'datetime',
-        'f_envio_archivo' => 'datetime',
+        'f_ingreso_informe_final' => 'date',
+        'f_aprobacion_contraparte' => 'date',
+        'f_aprobacion_jefe_tecnico' => 'date',
+        'f_aprobacion_director' => 'date',
+        'f_pase_gestion' => 'date',
+        'f_aprobacion_sec_gen' => 'date',
+        'f_envio_biblioteca' => 'date',
+        'f_envio_archivo' => 'date',
     ];
 
     protected static function booted()
     {
+
         static::saving(function ($expediente) {
+
+            $expediente->monto_imputado = ($expediente->monto_convenido ?? 0) + ($expediente->monto_cfi ?? 0);
 
         // 1. AUTO-COMPLETAR LA REGIÓN
             // Si hay una provincia seleccionada, buscamos a qué región pertenece

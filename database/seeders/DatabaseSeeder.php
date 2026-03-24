@@ -38,6 +38,29 @@ class DatabaseSeeder extends Seeder
             $this->call([
             TablasMaestrasSeeder::class,
             // Acá abajo podrías llamar después a un UserSeeder si querés crear tu usuario y el de Hernán automáticamente
-        ]);
+            ]);
+
+    // 4. Crear usuario Director
+            $directorUser = User::create([
+                'nombre' => 'María Teresa',
+                'apellido' => 'Oyhamburu',
+                'usuario' => 'moyhamburu',
+                'email' => 'moyhamburu@cfi.org.ar',
+                'password' => Hash::make('password123'),
+            ]);
+
+            $directorUser->assignRole($roleDirector);
+
+    // 4. Crear usuario Director
+            $jefeUser = User::create([
+                'nombre' => 'Hernán',
+                'apellido' => 'Manzo',
+                'usuario' => 'hmanzo',
+                'email' => 'hmanzo@cfi.org.ar',
+                'password' => Hash::make('password123'),
+            ]);
+
+            $jefeUser->assignRole($roleJefe);
+
     }
 }

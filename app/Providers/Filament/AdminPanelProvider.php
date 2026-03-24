@@ -6,10 +6,10 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Support\Facades\FilamentView; // Importante para los Hooks
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -17,7 +17,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use App\Filament\Pages\Auth\Register;
+use Illuminate\Support\HtmlString;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -28,42 +28,40 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login(\App\Filament\Pages\Auth\UnifiedLogin::class)
+            ->registration(\App\Filament\Pages\Auth\RegistroTecnico::class)
+            ->passwordReset()
             ->homeUrl(fn () => auth()->user()?->hasRole('Director') ? '/admin/expedientes' : '/admin')
+            
+            // --- PERSONALIZACIÓN VISUAL ---
+            ->brandName('Gestión CFI')
+            ->brandLogo(asset('images/logo-cfi.png'))
+            ->brandLogoHeight('3rem')
+            ->favicon(asset('images/favicon.png'))
+            ->darkMode(false)
+            ->colors([
+                'primary' => Color::hex('#0055A5'),
+            ])
+            
+            // --- CONFIGURACIÓN DE NAVEGACIÓN ---
             ->userMenuItems([
                 'logout' => \Filament\Navigation\MenuItem::make()->label('Salir'),
             ])
-            ->registration() // <-- ¡AGREGÁ ESTA LÍNEA ACÁ!
-            ->passwordReset()
-            ->brandLogo(asset('images/logo-cfi.png'))
-            ->brandLogoHeight('3rem') // Podés jugar con este valor (2rem, 4rem) hasta que quede del tamaño ideal
-            ->colors([
-                'primary' => \Filament\Support\Colors\Color::Amber,
-            ])
-/*             ->default()
-            ->id('admin')
-            ->path('admin')
-            ->login()
-            ->registration(\App\Filament\Pages\Auth\RegistroTecnico::class) */
+            
+            // --- HOOKS PARA EL DIRECTOR (Interfaz Limpia) ---
+            ->renderHook(
+                'panels::head.end',
+                fn () => auth()->check() && auth()->user()->hasRole('Director') 
+                    ? new HtmlString("
+                        <style>
+                            .fi-sidebar, .fi-topbar-start button { display: none !important; }
+                            .fi-main-ctn { margin-left: 0 !important; }
+                            .fi-topbar nav { justify-content: space-between !important; width: 100% !important; padding: 0 1rem !important; }
+                            .fi-topbar { background-color: white !important; border-bottom: 1px solid #e5e7eb !important; }
+                        </style>
+                    ") : ''
+            )
 
-            // --- INICIO DE PERSONALIZACIÓN VISUAL ---
-
-            ->brandName('Gestión CFI') // El título de la pestaña del navegador
-
-            // Los logos (asegurate de poner las imágenes en la carpeta public/images/)
-            ->brandLogo(asset('images/logo-cfi.png'))
-            ->brandLogoHeight('3rem') // Ajustá este valor si el logo se ve muy chico o muy grande
-            ->favicon(asset('images/favicon.png'))
-
-            // Desactivamos el modo oscuro si el logo del CFI no tiene versión para fondo negro
-            ->darkMode(false)
-
-            ->colors([
-                // Cambiá este código Hexadecimal por el azul o el color oficial que usen
-                'primary' => \Filament\Support\Colors\Color::hex('#0055A5'),
-            ])
-
-            // --- FIN DE PERSONALIZACIÓN VISUAL ---
-
+            // --- DESCUBRIMIENTO AUTOMÁTICO ---
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
