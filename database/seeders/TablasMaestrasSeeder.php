@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class TablasMaestrasSeeder extends Seeder
 {
@@ -94,10 +95,13 @@ class TablasMaestrasSeeder extends Seeder
             ['id' => 1, 'tema_estrategico' => 'Análisis y relevamiento económico', 'created_at' => now(), 'updated_at' => now()],
             ['id' => 2, 'tema_estrategico' => 'Educación', 'created_at' => now(), 'updated_at' => now()],
             ['id' => 3, 'tema_estrategico' => 'Fortalecimiento de la comunicación provincial', 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 5, 'tema_estrategico' => 'Modernización Normativa', 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 6, 'tema_estrategico' => 'Territorialización de los ODS', 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 7, 'tema_estrategico' => 'Transformación Digital e Innovación en el Estado', 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 8, 'tema_estrategico' => 'Transversalización de la perspectiva de género en las políticas públicas', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 4, 'tema_estrategico' => 'Fortalecimiento del diseño de políticas públicas', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 5, 'tema_estrategico' => 'Medición estadística interna y análisis de datos', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 6, 'tema_estrategico' => 'Modernización Normativa', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 7, 'tema_estrategico' => 'Regiones concertadas', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 8, 'tema_estrategico' => 'Territorialización de los ODS', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 9, 'tema_estrategico' => 'Transformación Digital e Innovación en el Estado', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 10, 'tema_estrategico' => 'Transversalización de la perspectiva de género en las políticas públicas', 'created_at' => now(), 'updated_at' => now()],
         ];
         DB::table('temas_estrategicos')->insert($temas);
 
@@ -136,28 +140,28 @@ class TablasMaestrasSeeder extends Seeder
 
         // 10. Crear usuarios
         $usuarios = [
-            ['id' => 4, 'usuario' => 'aboix', 'nombre' => 'Andrés', 'apellido' => 'Boix', 'email' => 'aboix@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
-            ['id' => 5, 'usuario' => 'ameyer', 'nombre' => 'Alejandra', 'apellido' => 'Meyer', 'email' => 'ameyer@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
-            ['id' => 6, 'usuario' => 'arojas', 'nombre' => 'Analía', 'apellido' => 'Rojas', 'email' => 'arojas@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
-            ['id' => 7, 'usuario' => 'efrigeni', 'nombre' => 'Ezequiel', 'apellido' => 'Frigeni', 'email' => 'efrigeni@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
-            ['id' => 8, 'usuario' => 'fpascual', 'nombre' => 'Florencia', 'apellido' => 'Pascual', 'email' => 'fpascual@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
-            ['id' => 9, 'usuario' => 'gbmiller', 'nombre' => 'Guillermo', 'apellido' => 'Miller', 'email' => 'gbmiller@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
-            ['id' => 10, 'usuario' => 'jbragagnolo', 'nombre' => 'Jorgelina', 'apellido' => 'Bragagnolo', 'email' => 'jbragagnolo@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
-            ['id' => 11, 'usuario' => 'kfernandez', 'nombre' => 'Karina', 'apellido' => 'Fernández', 'email' => 'kfernandez@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
-            ['id' => 12, 'usuario' => 'ldemaria', 'nombre' => 'Leandro', 'apellido' => 'Demaria', 'email' => 'ldemaria@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
-            ['id' => 13, 'usuario' => 'mbagattin', 'nombre' => 'Marisol', 'apellido' => 'Bagattin', 'email' => 'mbagattin@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
-            ['id' => 14, 'usuario' => 'mcantarelli', 'nombre' => 'Mariana', 'apellido' => 'Cantarelli', 'email' => 'mcantarelli@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
-            ['id' => 15, 'usuario' => 'mdelvalle', 'nombre' => 'Mariana', 'apellido' => 'Del Valle', 'email' => 'mdelvalle@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
-            ['id' => 16, 'usuario' => 'mlenna', 'nombre' => 'María Concepción', 'apellido' => 'Lenna', 'email' => 'mlenna@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
-            ['id' => 17, 'usuario' => 'mlofiego', 'nombre' => 'Marcelo', 'apellido' => 'Lofiego', 'email' => 'mlofiego@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
-            ['id' => 18, 'usuario' => 'moggero', 'nombre' => 'Marcela', 'apellido' => 'Oggero', 'email' => 'moggero@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
-            ['id' => 19, 'usuario' => 'msalvatierra', 'nombre' => 'Marcela', 'apellido' => 'Salvatierra', 'email' => 'msalvatierra@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
-            ['id' => 20, 'usuario' => 'pcarlet', 'nombre' => 'Patricio', 'apellido' => 'Carlet', 'email' => 'pcarlet@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
-            ['id' => 21, 'usuario' => 'rfiguerola', 'nombre' => 'Romina', 'apellido' => 'Figuerola', 'email' => 'rfiguerola@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
-            ['id' => 22, 'usuario' => 'sespindola', 'nombre' => 'Silvia', 'apellido' => 'Espíndola', 'email' => 'sespindola@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
-            ['id' => 23, 'usuario' => 'vcueto', 'nombre' => 'Verónica', 'apellido' => 'Cueto', 'email' => 'vcueto@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
-            ['id' => 24, 'usuario' => 'vgrgic', 'nombre' => 'Victoria', 'apellido' => 'Grgic', 'email' => 'vgrgic@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1]
+            ['id' => 1, 'usuario' => 'aboix', 'nombre' => 'Andrés', 'apellido' => 'Boix', 'email' => 'aboix@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 2, 'usuario' => 'ameyer', 'nombre' => 'Alejandra', 'apellido' => 'Meyer', 'email' => 'ameyer@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 3, 'usuario' => 'arojas', 'nombre' => 'Analía', 'apellido' => 'Rojas', 'email' => 'arojas@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 4, 'usuario' => 'efrigeni', 'nombre' => 'Ezequiel', 'apellido' => 'Frigeni', 'email' => 'efrigeni@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 5, 'usuario' => 'fpascual', 'nombre' => 'Florencia', 'apellido' => 'Pascual', 'email' => 'fpascual@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 6, 'usuario' => 'gbmiller', 'nombre' => 'Guillermo', 'apellido' => 'Miller', 'email' => 'gbmiller@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 7, 'usuario' => 'jbragagnolo', 'nombre' => 'Jorgelina', 'apellido' => 'Bragagnolo', 'email' => 'jbragagnolo@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 8, 'usuario' => 'kfernandez', 'nombre' => 'Karina', 'apellido' => 'Fernández', 'email' => 'kfernandez@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 9, 'usuario' => 'ldemaria', 'nombre' => 'Leandro', 'apellido' => 'Demaria', 'email' => 'ldemaria@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 10, 'usuario' => 'mbagattin', 'nombre' => 'Marisol', 'apellido' => 'Bagattin', 'email' => 'mbagattin@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 11, 'usuario' => 'mcantarelli', 'nombre' => 'Mariana', 'apellido' => 'Cantarelli', 'email' => 'mcantarelli@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 12, 'usuario' => 'mdelvalle', 'nombre' => 'Mariana', 'apellido' => 'Del Valle', 'email' => 'mdelvalle@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 13, 'usuario' => 'mlenna', 'nombre' => 'María Concepción', 'apellido' => 'Lenna', 'email' => 'mlenna@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 14, 'usuario' => 'mlofiego', 'nombre' => 'Marcelo', 'apellido' => 'Lofiego', 'email' => 'mlofiego@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 15, 'usuario' => 'moggero', 'nombre' => 'Marcela', 'apellido' => 'Oggero', 'email' => 'moggero@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 16, 'usuario' => 'msalvatierra', 'nombre' => 'Marcela', 'apellido' => 'Salvatierra', 'email' => 'msalvatierra@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 17, 'usuario' => 'pcarlet', 'nombre' => 'Patricio', 'apellido' => 'Carlet', 'email' => 'pcarlet@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 18, 'usuario' => 'rfiguerola', 'nombre' => 'Romina', 'apellido' => 'Figuerola', 'email' => 'rfiguerola@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 19, 'usuario' => 'sespindola', 'nombre' => 'Silvia', 'apellido' => 'Espíndola', 'email' => 'sespindola@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 20, 'usuario' => 'vcueto', 'nombre' => 'Verónica', 'apellido' => 'Cueto', 'email' => 'vcueto@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1],
+            ['id' => 21, 'usuario' => 'vgrgic', 'nombre' => 'Victoria', 'apellido' => 'Grgic', 'email' => 'vgrgic@cfi.org.ar','password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now(), 'direccion_id' => 2, 'area_id' => 1]
         ];
-        DB::table('areas')->insert($areas);
+        DB::table('users')->insert($usuarios);
     }
 }

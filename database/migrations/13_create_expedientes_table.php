@@ -30,9 +30,9 @@ return new class extends Migration
             $table->foreignId('provincia_id')->constrained('provincias');
             $table->foreignId('localidad_id')->constrained('localidades');
             $table->foreignId('contraparte_id')->constrained('contrapartes_provinciales');
-            $table->foreignId('asignacion_id')->constrained('asignaciones_presupuestarias');
-            $table->foreignId('tema_id')->constrained('temas_estrategicos');
-            $table->foreignId('tipo_contrato_id')->constrained('tipos_contrato');
+            $table->foreignId('asignacion_id')->nullable()->constrained('asignaciones_presupuestarias');
+            $table->foreignId('tema_id')->nullable()->constrained('temas_estrategicos');
+            $table->foreignId('tipo_contrato_id')->nullable()->constrained('tipos_contrato');
             $table->foreignId('estado_contrato_id')->nullable()->constrained('estados_contrato');
 
 

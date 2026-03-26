@@ -21,7 +21,8 @@ return new class extends Migration
             $table->string('contacto_nombre')->nullable();
             $table->string('contacto_email')->nullable();
             $table->string('contacto_celular')->nullable();
-            $table->string('documentacion')->nullable(); // Ruta o referencia a la documentación del proveedor
+            $table->string('doc_proveedor')->nullable(); // Ruta o referencia a la documentación del proveedor
+            $table->string('doc_dotacion')->nullable(); // Ruta o referencia a la documentación del proveedor
             $table->text('observaciones')->nullable();
             $table->timestamps();
         });

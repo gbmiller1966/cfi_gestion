@@ -17,6 +17,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+
+        $this->call([
+            TablasMaestrasSeeder::class,
+            // Acá abajo podrías llamar después a un UserSeeder si querés crear tu usuario y el de Hernán automáticamente
+        ]);
+
     // 1. Crear los 4 roles del sistema
             $roleAdmin = Role::create(['name' => 'Admin']);
             $roleTecnico = Role::create(['name' => 'Técnico']);
@@ -34,11 +40,6 @@ class DatabaseSeeder extends Seeder
 
     // 3. Asignarle el rol de Admin a tu usuario
             $adminUser->assignRole($roleAdmin);
-
-            $this->call([
-            TablasMaestrasSeeder::class,
-            // Acá abajo podrías llamar después a un UserSeeder si querés crear tu usuario y el de Hernán automáticamente
-            ]);
 
     // 4. Crear usuario Director
             $directorUser = User::create([

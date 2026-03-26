@@ -80,8 +80,12 @@ class ProveedorResource extends Resource
                 // 3. Notas y Documentos
                 Forms\Components\Section::make('Información Adicional')
                     ->schema([
-                        Forms\Components\Textarea::make('documentacion')
-                            ->label('Detalle de Documentación')
+                        Forms\Components\Textarea::make('doc_proveedor')
+                            ->label('Documentación del Proveedor')
+                            ->rows(3)
+                            ->columnSpanFull(),
+                        Forms\Components\Textarea::make('doc_dotacion')
+                            ->label('Documentación de la Dotación')
                             ->rows(3)
                             ->columnSpanFull(),
                         Forms\Components\Textarea::make('observaciones')
