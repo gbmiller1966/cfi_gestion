@@ -18,6 +18,7 @@ return new class extends Migration
             $table->decimal('monto_solicitud_provincial', 15, 2)->default(0);
             $table->decimal('monto_convenido', 15, 2)->default(0);
             $table->decimal('monto_cfi', 15, 2)->default(0);
+            $table->decimal('monto_imputado', 15, 2)->default(0);
 
             // --- Relaciones de Propiedad y Estructura ---
             $table->foreignId('user_id')->constrained('users'); // Técnico dueño

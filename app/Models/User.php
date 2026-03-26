@@ -63,7 +63,12 @@ class User extends Authenticatable implements FilamentUser, HasName
         // 2. IMPORTANTE: Si es Técnico o Director, SOLO entra si ya tiene Dirección asignada por el Admin.
         // Si direccion_id es null, Filament le denegará el acceso (ideal para tu flujo de aprobación).
         if ($panel->getId() === 'admin') {
-            return $this->hasAnyRole(['Admin','Director', 'Técnico']);
+            return $this->hasRole(['Director']);
+        }
+
+        // 3. Regla para el Panel de Técnico (donde entran los Técnicos)
+        if ($panel->getId() === 'tecnico') {
+            return $this->hasRole('Técnico');
         }
 
         return false;

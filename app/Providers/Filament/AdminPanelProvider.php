@@ -33,7 +33,7 @@ class AdminPanelProvider extends PanelProvider
             ->homeUrl(fn () => auth()->user()?->hasRole('Director') ? '/admin/expedientes' : '/admin')
             
             // --- PERSONALIZACIÓN VISUAL ---
-            ->brandName('Gestión CFI')
+            //->brandName('Gestión CFI')
             ->brandLogo(asset('images/logo-cfi.png'))
             ->brandLogoHeight('3rem')
             ->favicon(asset('images/favicon.png'))
@@ -61,6 +61,16 @@ class AdminPanelProvider extends PanelProvider
                     ") : ''
             )
 
+            // 2. EL HOOK DEL LOGO (Para que aparezca a la izquierda en ese espacio)
+            ->renderHook(
+                'panels::topbar.start',
+                fn () => auth()->check() && auth()->user()->hasRole('Director') 
+                    ? new HtmlString("
+                        <div class='flex items-center px-4'>
+                            <img src='" . asset('images/logo-cfi.png') . "' alt='Logo CFI' style='height: 2.5rem; width: auto;'>
+                        </div>
+                    ") : ''
+            )
             // --- DESCUBRIMIENTO AUTOMÁTICO ---
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
