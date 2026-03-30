@@ -9,9 +9,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('temas_estrategicos', function (Blueprint $table) {
+        Schema::create('temas', function (Blueprint $table) {
             $table->id();
-            $table->string('tema_estrategico');
+            $table->string('tema');
             $table->timestamps();
         });
     }
@@ -20,6 +20,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('temas_estrategicos');
+        Schema::dropIfExists('temas');
     }
 };

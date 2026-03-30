@@ -68,15 +68,15 @@ class ExpedienteResource extends Resource
                                 Forms\Components\Section::make('Clasificación y Estado')
                                     ->schema([
                                         Forms\Components\Select::make('asignacion_id')
-                                            ->relationship('asignacion', 'asignacion_presupuestaria') // Ajustá 'nombre' a la columna real de tu tabla
+                                            ->relationship('asignacion', 'asignacion')
                                             ->searchable()
                                             ->preload(),
                                         Forms\Components\Select::make('tema_id')
-                                            ->relationship('tema', 'tema_estrategico') // Ajustá 'nombre' a la columna real de tu tabla
+                                            ->relationship('tema', 'tema')
                                             ->searchable()
                                             ->preload(),
-                                        Forms\Components\Select::make('tipo_contrato_id')
-                                            ->relationship('tipoContrato', 'tipo_contrato') // Ajustá 'nombre' a la columna real de tu tabla
+                                        Forms\Components\Select::make('tipo_id')
+                                            ->relationship('tipo', 'tipo')
                                             ->searchable()
                                             ->preload(),
 
@@ -205,7 +205,7 @@ class ExpedienteResource extends Resource
                                             ->schema([
                                                 Forms\Components\Select::make('informe_id')
                                                     ->label('Tipo de Informe')
-                                                    ->relationship('informeMaestro', 'informe_maestro')
+                                                    ->relationship('informe', 'informe')
                                                     ->required(),
                                                 Forms\Components\TextInput::make('meses_pactados')
                                                     ->label('Meses')
@@ -363,7 +363,7 @@ class ExpedienteResource extends Resource
                 ->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total Imputado'))
                 ->visible(fn () => !auth()->user()->hasRole('Técnico')),
 
-            Tables\Columns\TextColumn::make('estadoContrato.estado')
+            Tables\Columns\TextColumn::make('estado.estado')
                 ->label('Estado')
                 ->badge()
                 ->color(fn (string $state): string => match ($state) {
@@ -432,9 +432,9 @@ class ExpedienteResource extends Resource
         ])
         ->filters([
             // Filtro por Estado
-            Tables\Filters\SelectFilter::make('estado_contrato_id')
+            Tables\Filters\SelectFilter::make('estado_id')
                 ->label('Estado')
-                ->relationship('estadoContrato', 'estado')
+                ->relationship('estado', 'estado')
                 ->multiple()
                 ->preload(),
 

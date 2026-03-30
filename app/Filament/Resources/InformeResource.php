@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\DireccionResource\Pages;
-use App\Filament\Resources\DireccionResource\RelationManagers;
-use App\Models\Direccion;
+use App\Filament\Resources\InformeResource\Pages;
+use App\Filament\Resources\InformeResource\RelationManagers;
+use App\Models\Informe;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -13,22 +13,22 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class DireccionResource extends Resource
+class InformeResource extends Resource
 {
-    protected static ?string $model = Direccion::class;
+    protected static ?string $model = Informe::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static ?string $modelLabel = 'Dirección'; // Singular (para el botón "Crear Dirección")
-    protected static ?string $pluralModelLabel = 'Direcciones'; // Plural (para los títulos)
-    protected static ?string $navigationLabel = 'Direcciones'; // El texto exacto del menú lateral superior
+    protected static ?string $modelLabel = 'Informe'; // Singular (para el botón "Crear Dirección")
+    protected static ?string $pluralModelLabel = 'Informes'; // Plural (para los títulos)
+    protected static ?string $navigationLabel = 'Informes'; // El texto exacto del menú lateral superior
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('direccion')
-                    ->label('Nombre de la Dirección')
-                    ->placeholder('Ej: Dirección de Coordinación')
+                    ->label('Nombre del Informe')
+                    ->placeholder('Ej: Informe Parcial')
                     ->required()
                     ->maxLength(255)
                     ->columnSpanFull(), // Hace que el campo ocupe todo el ancho del formulario
@@ -39,8 +39,8 @@ class DireccionResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('direccion')
-                    ->label('Dirección')
+                Tables\Columns\TextColumn::make('informe')
+                    ->label('Informe')
                     ->searchable()
                     ->sortable(),
 
@@ -74,9 +74,9 @@ class DireccionResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListDirecciones::route('/'),
-            'create' => Pages\CreateDireccion::route('/create'),
-            'edit' => Pages\EditDireccion::route('/{record}/edit'),
+            'index' => Pages\ListInformes::route('/'),
+            'create' => Pages\CreateInforme::route('/create'),
+            'edit' => Pages\EditInforme::route('/{record}/edit'),
         ];
     }
     public static function canViewAny(): bool

@@ -29,11 +29,11 @@ return new class extends Migration
             $table->foreignId('region_id')->constrained('regiones');
             $table->foreignId('provincia_id')->constrained('provincias');
             $table->foreignId('localidad_id')->constrained('localidades');
-            $table->foreignId('contraparte_id')->constrained('contrapartes_provinciales');
-            $table->foreignId('asignacion_id')->nullable()->constrained('asignaciones_presupuestarias');
-            $table->foreignId('tema_id')->nullable()->constrained('temas_estrategicos');
-            $table->foreignId('tipo_contrato_id')->nullable()->constrained('tipos_contrato');
-            $table->foreignId('estado_contrato_id')->nullable()->constrained('estados_contrato');
+            $table->foreignId('contraparte_id')->constrained('contrapartes');
+            $table->foreignId('asignacion_id')->nullable()->constrained('asignaciones');
+            $table->foreignId('tema_id')->nullable()->constrained('temas');
+            $table->foreignId('tipo_id')->nullable()->constrained('tipos');
+            $table->foreignId('estado_id')->nullable()->constrained('estados');
 
 
             // --- Circuito de Tiempos (16 Etapas) ---

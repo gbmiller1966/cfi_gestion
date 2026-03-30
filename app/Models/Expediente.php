@@ -36,100 +36,62 @@ class Expediente extends Model
 
     protected static function booted()
     {
-
         static::saving(function ($expediente) {
-
+            // CÁLCULO DE MONTO TOTAL
             $expediente->monto_imputado = ($expediente->monto_convenido ?? 0) + ($expediente->monto_cfi ?? 0);
 
-        // 1. AUTO-COMPLETAR LA REGIÓN
-            // Si hay una provincia seleccionada, buscamos a qué región pertenece
+            // 1. AUTO-COMPLETAR LA REGIÓN
             if ($expediente->provincia_id) {
-                // Buscamos la provincia en la base de datos
                 $provincia = \App\Models\Provincia::find($expediente->provincia_id);
-
-                // Si la encontramos, le copiamos su region_id al expediente
                 if ($provincia) {
                     $expediente->region_id = $provincia->region_id;
                 }
             }
-            // 2. CÁLCULO DEL ESTADO (Cascada de fin a inicio apuntando al ID)
 
+            // 2. CÁLCULO DEL ESTADO (Cascada de fin a inicio)
             if (!empty($expediente->estado_excepcion)) {
-                // Ojo acá: si 'estado_excepcion' antes guardaba texto,
-                // vas a tener que asegurarte de que en el formulario ahora guarde el ID de la excepción.
-                $expediente->estado_contrato_id = $expediente->estado_excepcion;
+                $expediente->estado_id = $expediente->estado_excepcion; // Suponiendo que renombraste la columna estado_contrato_id a estado_id
                 return;
             }
 
             if (!empty($expediente->f_envio_archivo)) {
-                $expediente->estado_contrato_id = 7; // Reemplazar por el ID real de 'Archivado'
-
+                $expediente->estado_id = 7; // Archivado
             } elseif (!empty($expediente->f_aprobacion_sec_gen)) {
-                $expediente->estado_contrato_id = 6; // Reemplazar por el ID real de 'Finalizado'
-
+                $expediente->estado_id = 6; // Finalizado
             } elseif (!empty($expediente->f_inicio_contrato)) {
-                $expediente->estado_contrato_id = 5; // Reemplazar por el ID real de 'En ejecución'
-
+                $expediente->estado_id = 5; // En ejecución
             } elseif (!empty($expediente->f_firma_director_tdr)) {
-                $expediente->estado_contrato_id = 4; // Reemplazar por el ID real de 'En trámite'
-
+                $expediente->estado_id = 4; // En trámite
             } elseif (!empty($expediente->f_ingreso_area)) {
-                $expediente->estado_contrato_id = 3; // Reemplazar por el ID real de 'En análisis'
-
+                $expediente->estado_id = 3; // En análisis
             } elseif (!empty($expediente->f_ingreso_cfi)) {
-                $expediente->estado_contrato_id = 2; // Reemplazar por el ID real de 'Ingresado al CFI'
-
+                $expediente->estado_id = 2; // Ingresado al CFI
             } else {
-                $expediente->estado_contrato_id = 1; // Reemplazar por el ID real de 'Borrador / Sin Ingresar'
+                $expediente->estado_id = 1; // Borrador
             }
-        // 2. CÁLCULO DEL ESTADO (Cascada de fin a inicio)
-/*             if (!empty($expediente->estado_excepcion)) {
-                $expediente->estado = $expediente->estado_excepcion;
-                return;
-            }
-
-            if (!empty($expediente->f_envio_archivo)) {
-                $expediente->estado = 'Archivado';
-
-            } elseif (!empty($expediente->f_aprobacion_sec_gen)) {
-                $expediente->estado = 'Finalizado';
-
-            } elseif (!empty($expediente->f_inicio_contrato)) {
-                $expediente->estado = 'En ejecución';
-
-            } elseif (!empty($expediente->f_firma_director_tdr)) {
-                $expediente->estado = 'En trámite';
-
-            } elseif (!empty($expediente->f_ingreso_area)) {
-                $expediente->estado = 'En análisis';
-
-            } elseif (!empty($expediente->f_ingreso_cfi)) {
-                $expediente->estado = 'Ingresado al CFI';
-
-            } else {
-                $expediente->estado = 'Borrador / Sin Ingresar';
-            } */
         });
     }
 
-    // Propiedad y Estructura
+    // --- ESTRUCTURA ORGANIZATIVA ---
     public function tecnico(): BelongsTo { return $this->belongsTo(User::class, 'user_id'); }
     public function direccion(): BelongsTo { return $this->belongsTo(Direccion::class); }
     public function area(): BelongsTo { return $this->belongsTo(Area::class); }
 
-    // Tablas Maestras
+    // --- TABLAS MAESTRAS (NOMBRES CORTOS) ---
     public function region(): BelongsTo { return $this->belongsTo(Region::class); }
-    public function provincia(): BelongsTo { return $this->belongsTo(Provincia::class, 'provincia_id'); }
+    public function provincia(): BelongsTo { return $this->belongsTo(Provincia::class); }
     public function localidad(): BelongsTo { return $this->belongsTo(Localidad::class); }
-    public function contraparte(): BelongsTo { return $this->belongsTo(ContraparteProvincial::class, 'contraparte_id'); }
-    public function asignacion(): BelongsTo { return $this->belongsTo(AsignacionPresupuestaria::class, 'asignacion_id'); }
-    public function tema(): BelongsTo { return $this->belongsTo(TemaEstrategico::class, 'tema_estrategico_id'); }
-    public function tipoContrato(): BelongsTo { return $this->belongsTo(TipoContrato::class, 'tipo_contrato_id'); }
-    public function estadoContrato(): BelongsTo { return $this->belongsTo(EstadoContrato::class, 'estado_contrato_id'); }
+    
+    // Aquí aplicamos los cambios de nombres
+    public function contraparte(): BelongsTo { return $this->belongsTo(Contraparte::class); }
+    public function asignacion(): BelongsTo { return $this->belongsTo(Asignacion::class); }
+    public function tema(): BelongsTo { return $this->belongsTo(Tema::class); }
+    public function tipo(): BelongsTo { return $this->belongsTo(Tipo::class); }
+    public function estado(): BelongsTo { return $this->belongsTo(Estado::class, 'estado_id'); }
 
-    // Pivots y Relaciones Hijas
-    public function proveedores(): BelongsToMany { return $this->belongsToMany(Proveedor::class, 'expediente_proveedor', 'expediente_id', 'proveedor_id'); }
-    public function colaboradores(): BelongsToMany { return $this->belongsToMany(User::class, 'expediente_user', 'expediente_id', 'user_id'); }
-    public function informes(): HasMany { return $this->hasMany(ExpedienteInforme::class, 'expediente_id'); }
-    public function hitos(): HasMany { return $this->hasMany(ExpedienteHito::class, 'expediente_id'); }
+    // --- RELACIONES HIJAS Y PIVOTS ---
+    public function proveedores(): BelongsToMany { return $this->belongsToMany(Proveedor::class, 'expediente_proveedor'); }
+    public function colaboradores(): BelongsToMany { return $this->belongsToMany(User::class, 'expediente_user'); }
+    public function expediente_informes(): HasMany { return $this->hasMany(ExpedienteInforme::class); }
+    public function hitos(): HasMany { return $this->hasMany(ExpedienteHito::class); }
 }

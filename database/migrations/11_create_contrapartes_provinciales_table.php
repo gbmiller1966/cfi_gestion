@@ -11,7 +11,7 @@ return new class extends Migration
 */
 public function up(): void
 {
-    Schema::create('contrapartes_provinciales', function (Blueprint $table) {
+    Schema::create('contrapartes', function (Blueprint $table) {
     $table->id();
     $table->string('nombre');
     $table->string('apellido');
@@ -31,6 +31,6 @@ public function up(): void
 */
 public function down(): void
 {
-    Schema::dropIfExists('contrapartes_provinciales');
+    Schema::dropIfExists('contrapartes');
 }
 };

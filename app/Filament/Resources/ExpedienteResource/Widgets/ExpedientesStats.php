@@ -48,8 +48,8 @@ class ExpedientesStats extends BaseWidget
 
         // --- Contadores que ya tenías ---
         $totalGestion = (clone $query)->count();
-        $pendientes = (clone $query)->whereIn('estado_contrato_id', [1, 2])->count();
-        $gestionActiva = (clone $query)->whereIn('estado_contrato_id', [3, 4, 5])->count();
+        $pendientes = (clone $query)->whereIn('estado_id', [1, 2])->count();
+        $gestionActiva = (clone $query)->whereIn('estado_id', [3, 4, 5])->count();
 
         return [
             // Fila 1: Resumen General

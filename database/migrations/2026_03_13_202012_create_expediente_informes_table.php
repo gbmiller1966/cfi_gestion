@@ -17,7 +17,7 @@ return new class extends Migration
                 
                 // Asumiendo que tu tabla maestra de informes se llama 'informes_maestros' o similar
                 // Cambiá 'informes_maestros' por el nombre real de tu tabla si es distinto
-                $table->foreignId('informe_id')->constrained('informes_maestros'); 
+                $table->foreignId('informe_id')->constrained('informes'); 
                 
                 $table->integer('meses_pactados')->nullable();
                 $table->date('fecha_limite')->nullable();

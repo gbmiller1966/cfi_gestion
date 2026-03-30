@@ -9,9 +9,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('asignaciones_presupuestarias', function (Blueprint $table) {
+        Schema::create('asignaciones', function (Blueprint $table) {
             $table->id();
-            $table->string('asignacion_presupuestaria');
+            $table->string('asignacion');
             $table->timestamps();
         });
     }
@@ -21,6 +21,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('asignaciones_presupuestarias');
+        Schema::dropIfExists('asignaciones');
     }
 };

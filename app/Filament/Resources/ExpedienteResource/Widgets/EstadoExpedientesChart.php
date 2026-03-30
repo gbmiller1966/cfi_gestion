@@ -49,7 +49,7 @@ class EstadoExpedientesChart extends ChartWidget
 
         foreach ($configEstados as $id => $config) {
             // 1. Contamos
-            $data[] = (clone $query)->where('estado_contrato_id', $id)->count();
+            $data[] = (clone $query)->where('estado_id', $id)->count();
 
             // 2. Agregamos el Label
             $labels[] = $config['nombre'];
