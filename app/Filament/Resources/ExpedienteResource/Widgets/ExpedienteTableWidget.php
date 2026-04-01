@@ -6,14 +6,14 @@ use App\Models\Expediente;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
-use Filament\Widgets\Concerns\InteractsWithPageFilters; 
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Illuminate\Database\Eloquent\Builder;
 
 class ExpedienteTableWidget extends BaseWidget
 {
     use InteractsWithPageFilters;
 
-    protected static bool $isLazy = false; 
+    protected static bool $isLazy = false;
 
     protected int | string | array $columnSpan = 'full';
     protected static ?string $heading = 'Listado de Gestión de Expedientes';
@@ -22,7 +22,7 @@ class ExpedienteTableWidget extends BaseWidget
     {
         return $table
             ->query(function () {
-                $query = Expediente::query();
+                $query = Expediente::query()->with(['estado', 'provincia']);
                 $user = auth()->user();
 
                 // 1. Filtro de Seguridad por Rol
@@ -39,14 +39,24 @@ class ExpedienteTableWidget extends BaseWidget
 
                 // 2. Filtro dinámico del Dashboard (Provincia)
                 $provinciaId = $this->filters['provincia_id'] ?? null;
-                
+
                 if ($provinciaId) {
                     $query->where('provincia_id', $provinciaId);
                 }
 
+                $query->orderByRaw("FIELD(
+                    (SELECT estado FROM estados WHERE estados.id = expedientes.estado_id),
+                    'En análisis',
+                    'En trámite',
+                    'En ejecución',
+                    'Finalizado',
+                    'Archivado',
+                    'Borrador / Sin Ingresar al Área'
+                ) ASC");
+
                 return $query;
             })
-            ->defaultSort('estado_id', 'asc')
+            ->persistSortInSession()
             ->columns([
                 Tables\Columns\TextColumn::make('gde_numero')
                     ->label('GDE')
@@ -66,7 +76,8 @@ class ExpedienteTableWidget extends BaseWidget
 
                 Tables\Columns\TextColumn::make('tecnico.apellido')
                     ->label('Técnico a cargo')
-                    ->sortable(),
+                    ->sortable()
+                    ->visible(fn () => ! auth()->user()->hasRole('Técnico')),
 
                 Tables\Columns\TextColumn::make('monto_imputado')
                     ->label('Monto Imputado')
@@ -91,14 +102,14 @@ class ExpedienteTableWidget extends BaseWidget
 
                 Tables\Columns\TextColumn::make('dias_cfi_area')
                     ->label('Días (CFI-Área)')
-                    ->getStateUsing(fn ($record) => $record->f_ingreso_cfi && $record->f_ingreso_area 
-                        ? \Carbon\Carbon::parse($record->f_ingreso_cfi)->diffInDays($record->f_ingreso_area) . ' d.' 
+                    ->getStateUsing(fn ($record) => $record->f_ingreso_cfi && $record->f_ingreso_area
+                        ? \Carbon\Carbon::parse($record->f_ingreso_cfi)->diffInDays($record->f_ingreso_area) . ' d.'
                         : '-'),
 
                 Tables\Columns\TextColumn::make('dias_area_dir')
                     ->label('Días (Área-Dir)')
-                    ->getStateUsing(fn ($record) => $record->f_ingreso_area && $record->f_elevacion_tdr 
-                        ? \Carbon\Carbon::parse($record->f_ingreso_area)->diffInDays($record->f_elevacion_tdr) . ' d.' 
+                    ->getStateUsing(fn ($record) => $record->f_ingreso_area && $record->f_elevacion_tdr
+                        ? \Carbon\Carbon::parse($record->f_ingreso_area)->diffInDays($record->f_elevacion_tdr) . ' d.'
                         : '-'),
             ])
             ->defaultPaginationPageOption(10)

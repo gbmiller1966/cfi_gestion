@@ -132,14 +132,29 @@ class ExpedienteResource extends Resource
                                             ->multiple()
                                             ->relationship('proveedores', 'razon_social')
                                             ->preload(),
-                                        Forms\Components\Select::make('contraparte_id')
-                                            ->relationship('contraparte', 'apellido')
-                                            ->label('Contraparte Provincial'),
+                                Forms\Components\Select::make('contraparte_id')
+                                    ->label('Contraparte Provincial')
+                                    ->relationship('contraparte', 'apellido')
+                                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->apellido}, {$record->nombre} ({$record->provincia?->provincia})")
+                                    ->searchable(['apellido', 'nombre'])
+                                    ->getSearchResultsUsing(fn (string $search): array => \App\Models\Contraparte::where('apellido', 'like', "%{$search}%")
+                                        ->orWhere('nombre', 'like', "%{$search}%")
+                                        ->limit(50) // Trae los mejores 50 resultados según lo que escribió
+                                        ->get()
+                                        ->mapWithKeys(fn ($record) => [$record->id => "{$record->apellido}, {$record->nombre} ({$record->provincia?->provincia})"])
+                                        ->toArray()
+                                    )
+                                    // Importante: para que cuando edites cargue el valor actual aunque no esté pre-cargado
+                                    ->getOptionLabelUsing(fn ($value): ?string => ($record = \App\Models\Contraparte::find($value))
+                                        ? "{$record->apellido}, {$record->nombre} ({$record->provincia?->provincia})"
+                                        : null
+                                    ),
                                         Forms\Components\Select::make('colaboradores')
                                             ->multiple()
-                                            ->relationship('colaboradores', 'nombre')
+                                            ->relationship('colaboradores', 'apellido')
                                             ->label('Técnicos Colaboradores')
-                                            ->preload(),
+                                            ->preload()
+                                            ->searchable(),
 
                                         Forms\Components\TextInput::make('monto_solicitud_provincial')
                                             ->label('Monto Solicitud')
@@ -211,32 +226,34 @@ class ExpedienteResource extends Resource
 
                                 Forms\Components\Section::make('Planificación de Informes')
                                     ->schema([
-                                        Forms\Components\Repeater::make('informes')
-                                            ->relationship()
+                                        Forms\Components\Repeater::make('expediente_informes') // Usamos el nombre real de la relación HasMany
+                                            ->label('Planificación de Informes')
+                                            ->relationship('expediente_informes')
+                                            ->defaultItems(0)
                                             ->schema([
-                                                Forms\Components\Select::make('informe_id')
+                                                Forms\Components\Select::make('informe_id') // El campo en la BD
                                                     ->label('Tipo de Informe')
-                                                    ->relationship('informe', 'informe')
-                                                    ->required(),
+                                                    ->relationship('informe', 'informe') // Relación 'informe' en modelo ExpedienteInforme, columna 'informe' en tabla informes
+                                                    ->required()
+                                                    ->preload()
+                                                    ->searchable(),
+
                                                 Forms\Components\TextInput::make('meses_pactados')
                                                     ->label('Meses')
                                                     ->numeric()
                                                     ->live()
                                                     ->afterStateUpdated(function ($state, Forms\Get $get, Forms\Set $set) {
                                                         $inicio = $get('../../f_inicio_contrato');
-
-                                                        // Le agregamos (int) a $state para que Carbon no explote
                                                         if ($inicio && $state) {
                                                             $set('fecha_limite', \Carbon\Carbon::parse($inicio)->addMonths((int) $state)->format('Y-m-d'));
                                                         }
                                                     }),
+
                                                 Forms\Components\DatePicker::make('fecha_limite')
                                                     ->label('Fecha Pactada')
-                                                    ->native(false) // Esto hace que el picker sea más amigable
+                                                    ->native(false)
                                                     ->displayFormat('d/m/Y')
                                                     ->format('Y-m-d'),
-                                                    //->readOnly()
-                                                    //->dehydrated(),
                                             ])->columns(3)->columnSpanFull(),
                                     ]),
                             ]),

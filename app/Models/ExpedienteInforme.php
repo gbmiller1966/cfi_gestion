@@ -11,9 +11,9 @@ class ExpedienteInforme extends Model
         protected $casts = [
             'fecha_limite' => 'date',
         ];
-    public function informeMaestro()
+    public function informe()
     {
         // Asegurate de que InformeMaestro::class sea el nombre real de tu modelo de tipos de informes
-        return $this->belongsTo(InformeMaestro::class, 'informe_id');
+        return $this->belongsTo(Informe::class, 'informe_id');
     }
 }
