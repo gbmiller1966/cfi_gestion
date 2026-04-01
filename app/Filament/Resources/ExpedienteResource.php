@@ -19,6 +19,17 @@ class ExpedienteResource extends Resource
     protected static ?string $navigationLabel = 'Expedientes';
     protected static ?string $modelLabel = 'Expediente';
 
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        // Si el usuario es Técnico, NO registrar en el menú lateral
+        if (auth()->user()?->hasRole('Técnico')) {
+            return false;
+        }
+
+        return true;
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -500,6 +511,7 @@ public static function getEloquentQuery(): Builder
         return [
             'index' => Pages\ListExpedientes::route('/'),
             'create' => Pages\CreateExpediente::route('/create'),
+            'view' => Pages\ViewExpediente::route('/{record}'),
             'edit' => Pages\EditExpediente::route('/{record}/edit'),
         ];
     }

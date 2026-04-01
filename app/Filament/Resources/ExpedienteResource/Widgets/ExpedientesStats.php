@@ -6,9 +6,12 @@ use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use App\Models\Expediente;
 use Carbon\Carbon;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 
 class ExpedientesStats extends BaseWidget
 {
+    use InteractsWithPageFilters;
+
     public static function canView(): bool
     {
         return auth()->user()->hasRole('Director');
@@ -19,59 +22,67 @@ class ExpedientesStats extends BaseWidget
         $user = auth()->user();
         $query = Expediente::query();
 
+        // 1. Filtro por Rol (Seguridad)
         if ($user->hasRole('Director')) {
             $query->where('direccion_id', $user->direccion_id);
         }
 
-        $hace15Dias = Carbon::now()->subDays(15);
+        // 2. Filtro por Provincia desde el Dashboard
+        // En StatsWidget usamos $this->filters directamente
+        $filters = $this->filters;
+        $provinciaId = $filters['provincia_id'] ?? null;
 
-        // 1. Ingreso CFI -> Derivación al Área
+        if ($provinciaId) {
+            $query->where('provincia_id', $provinciaId);
+        }
+
+        // --- A partir de aquí, las consultas usan la base filtrada ---
+
+        // 3. KPI: Demora Derivación (CFI -> Área)
         $demoraDerivacion = (clone $query)
             ->whereNotNull('f_ingreso_cfi')
-            ->whereNull('f_ingreso_area')
-            ->where('f_ingreso_cfi', '<=', $hace15Dias)
+            ->whereNotNull('f_ingreso_area')
+            ->whereRaw('DATEDIFF(f_ingreso_area, f_ingreso_cfi) > 15')
             ->count();
 
-        // 2. Ingreso Área -> Elevación TDRs
+        // 4. KPI: Demora TDRs (Área -> TDR)
         $demoraTdr = (clone $query)
             ->whereNotNull('f_ingreso_area')
-            ->whereNull('f_elevacion_tdr')
-            ->where('f_ingreso_area', '<=', $hace15Dias)
+            ->whereNotNull('f_elevacion_tdr')
+            ->whereRaw('DATEDIFF(f_elevacion_tdr, f_ingreso_area) > 15')
             ->count();
 
-        // 3. Firma Directora TDR -> Inicio Contrato (Firma Contrato)
+        // 5. KPI: Demora Contrato (Dir -> Contrato)
         $demoraContrato = (clone $query)
             ->whereNotNull('f_firma_director_tdr')
-            ->whereNull('f_inicio_contrato')
-            ->where('f_firma_director_tdr', '<=', $hace15Dias)
+            ->whereNotNull('f_inicio_contrato')
+            ->whereRaw('DATEDIFF(f_inicio_contrato, f_firma_director_tdr) > 15')
             ->count();
 
-        // --- Contadores que ya tenías ---
+        // --- Contadores de estado ---
         $totalGestion = (clone $query)->count();
         $pendientes = (clone $query)->whereIn('estado_id', [1, 2])->count();
         $gestionActiva = (clone $query)->whereIn('estado_id', [3, 4, 5])->count();
 
         return [
-            // Fila 1: Resumen General
             Stat::make('Total Gestión', $totalGestion)->color('info'),
             Stat::make('Pendientes / Ingresados', $pendientes)->color('gray'),
             Stat::make('En Gestión Activa', $gestionActiva)->color('primary'),
 
-            // Fila 2: KPIs de Tiempo (+15 días)
             Stat::make('Demora Derivación', $demoraDerivacion)
                 ->description('CFI -> Área (+15 días)')
                 ->descriptionIcon('heroicon-m-clock')
-                ->color($demoraDerivacion > 0 ? 'danger' : 'success'),
+                ->color($demoraDerivacion > 0 ? 'warning' : 'success'),
 
             Stat::make('Demora TDRs', $demoraTdr)
                 ->description('En Área -> TDR (+15 días)')
                 ->descriptionIcon('heroicon-m-document-text')
-                ->color($demoraTdr > 0 ? 'danger' : 'success'),
+                ->color($demoraTdr > 0 ? 'warning' : 'success'),
 
             Stat::make('Demora Contrato', $demoraContrato)
                 ->description('Dir -> Contrato (+15 días)')
                 ->descriptionIcon('heroicon-m-pencil-square')
-                ->color($demoraContrato > 0 ? 'danger' : 'success'),
+                ->color($demoraContrato > 0 ? 'warning' : 'success'),
         ];
     }
 }

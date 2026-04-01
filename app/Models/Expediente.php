@@ -94,4 +94,5 @@ class Expediente extends Model
     public function colaboradores(): BelongsToMany { return $this->belongsToMany(User::class, 'expediente_user'); }
     public function expediente_informes(): HasMany { return $this->hasMany(ExpedienteInforme::class); }
     public function hitos(): HasMany { return $this->hasMany(ExpedienteHito::class); }
+    public function informes(): HasMany {return $this->expediente_informes();}
 }
