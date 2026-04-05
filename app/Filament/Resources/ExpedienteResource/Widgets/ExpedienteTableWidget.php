@@ -16,7 +16,57 @@ class ExpedienteTableWidget extends BaseWidget
     protected static bool $isLazy = false;
 
     protected int | string | array $columnSpan = 'full';
-    protected static ?string $heading = 'Listado de Gestión de Expedientes';
+    // protected static ?string $heading = 'Listado de Gestión de Expedientes';
+// app/Filament/Resources/ExpedienteResource/Widgets/ExpedienteTableWidget.php
+
+    protected function getTableHeading(): string | null
+    {
+        $filtro = request()->query('filtro_demora');
+        $provinciaId = $this->filters['provincia_id'] ?? null;
+
+        // Si no hay filtro de demora, mostramos el título estándar
+        if (!$filtro) {
+            return 'Listado General de Gestión';
+        }
+
+        // 💡 Preparamos la consulta para contar cuántos hay en esta situación
+        $query = \App\Models\Expediente::query();
+        
+        // Aplicamos seguridad de Director
+        if (auth()->user()->hasRole('Director')) {
+            $query->where('direccion_id', auth()->user()->direccion_id);
+        }
+
+        // Aplicamos filtro de provincia si existe
+        if ($provinciaId) {
+            $query->where('provincia_id', $provinciaId);
+        }
+
+        // Aplicamos la lógica de la demora específica para el conteo
+        $count = match($filtro) {
+            'derivacion' => $query->whereNotNull('f_ingreso_cfi')
+                                ->whereNotNull('f_ingreso_area')
+                                ->whereRaw('DATEDIFF(f_ingreso_area, f_ingreso_cfi) > 15')
+                                ->count(),
+            'tdr' => $query->whereNotNull('f_ingreso_area')
+                            ->whereNotNull('f_elevacion_tdr')
+                            ->whereRaw('DATEDIFF(f_elevacion_tdr, f_ingreso_area) > 15')
+                            ->count(),
+            'contrato' => $query->whereNotNull('f_firma_director_tdr')
+                                ->whereNotNull('f_inicio_contrato')
+                                ->whereRaw('DATEDIFF(f_inicio_contrato, f_firma_director_tdr) > 15')
+                                ->count(),
+            default => null,
+        };
+
+        // 💡 Retornamos el título con el número (ej: 455)
+        return match($filtro) {
+            'derivacion' => "⚠️ Expedientes con Demora en Derivación: {$count}",
+            'tdr' => "⚠️ Expedientes con Demora en TDR: {$count}",
+            'contrato' => "⚠️ Expedientes con Demora en Contrato: {$count}",
+            default => 'Listado General de Gestión',
+        };
+    }
 
     public function table(Table $table): Table
     {
@@ -25,41 +75,57 @@ class ExpedienteTableWidget extends BaseWidget
                 $query = Expediente::query()->with(['estado', 'provincia']);
                 $user = auth()->user();
 
-                // 1. Filtro de Seguridad por Rol
-                if ($user->hasRole('Admin')) {
-                    // No filtramos nada
-                } elseif ($user->hasRole('Director')) {
+                // 1. Filtro de Seguridad por Rol (Lo que ya tenías)
+                if ($user->hasRole('Director')) {
                     $query->where('direccion_id', $user->direccion_id);
                 } elseif ($user->hasRole('Jefe de Área')) {
                     $query->whereHas('tecnico', fn ($q) => $q->where('area_id', $user->area_id));
-                } else {
-                    // Rol Técnico o cualquier otro: solo lo propio
+                } elseif (!$user->hasRole('Admin')) {
                     $query->where('user_id', $user->id);
                 }
 
-                // 2. Filtro dinámico del Dashboard (Provincia)
+                // 2. Filtro dinámico de Provincia (Dashboard)
                 $provinciaId = $this->filters['provincia_id'] ?? null;
-
-                if ($provinciaId) {
+                if (!empty($provinciaId)) {
                     $query->where('provincia_id', $provinciaId);
                 }
 
+                // 💡 3. CAPTURAR CLIC DE LAS TARJETAS (Nuevo)
+                $filtroDemora = request()->query('filtro_demora');
+
+                if ($filtroDemora === 'derivacion') {
+                    $query->whereNotNull('f_ingreso_cfi')
+                        ->whereNotNull('f_ingreso_area')
+                        ->whereRaw('DATEDIFF(f_ingreso_area, f_ingreso_cfi) > 15');
+                } elseif ($filtroDemora === 'tdr') {
+                    $query->whereNotNull('f_ingreso_area')
+                        ->whereNotNull('f_elevacion_tdr')
+                        ->whereRaw('DATEDIFF(f_elevacion_tdr, f_ingreso_area) > 15');
+                } elseif ($filtroDemora === 'contrato') {
+                    $query->whereNotNull('f_firma_director_tdr')
+                        ->whereNotNull('f_inicio_contrato')
+                        ->whereRaw('DATEDIFF(f_inicio_contrato, f_firma_director_tdr) > 15');
+                }
+
+                // Mantener el orden que ya tenías
                 $query->orderByRaw("FIELD(
                     (SELECT estado FROM estados WHERE estados.id = expedientes.estado_id),
-                    'En análisis',
-                    'En trámite',
-                    'En ejecución',
-                    'Finalizado',
-                    'Archivado',
-                    'Borrador / Sin Ingresar al Área'
+                    'En análisis', 'En trámite', 'En ejecución', 'Finalizado', 'Archivado', 'Borrador / Sin Ingresar al Área', 'Dado de baja'
                 ) ASC");
 
                 return $query;
             })
             ->persistSortInSession()
+
+            ->paginated([10, 25, 50])
+            ->defaultPaginationPageOption(10)
+            ->extremePaginationLinks()
+
             ->columns([
                 Tables\Columns\TextColumn::make('gde_numero')
                     ->label('GDE')
+                    ->limit(16)
+                    ->tooltip(fn (Expediente $record): string => $record->gde_numero)
                     ->searchable()
                     ->sortable(),
 
@@ -112,21 +178,19 @@ class ExpedienteTableWidget extends BaseWidget
                         ? \Carbon\Carbon::parse($record->f_ingreso_area)->diffInDays($record->f_elevacion_tdr) . ' d.'
                         : '-'),
             ])
-            ->defaultPaginationPageOption(10)
-            ->paginationPageOptions([10, 25, 50])
             ->filters([
                 Tables\Filters\SelectFilter::make('estado_id')
                     ->label('Estado')
                     ->relationship('estado', 'estado'),
             ])
             ->actions([
-                // Acción VER: Disponible para todos, abre en pestaña nueva
-                Tables\Actions\Action::make('view')
-                    ->label('Ver')
-                    ->icon('heroicon-m-eye')
-                    ->color('info')
-                    ->url(fn (Expediente $record): string => \App\Filament\Resources\ExpedienteResource::getUrl('view', ['record' => $record]))
-                    ->openUrlInNewTab(),
+                Tables\Actions\ViewAction::make()
+                        ->label('Ver')
+                        ->icon('heroicon-m-eye')
+                        ->color('info')
+                        // Forzamos la URL al recurso principal
+                        ->url(fn (Expediente $record): string => \App\Filament\Resources\ExpedienteResource::getUrl('view', ['record' => $record]))
+                        ->openUrlInNewTab(false), // Para que Miller no se pierda en mil pestañas
 
                 // Acción EDITAR: Solo visible para Técnicos
                 Tables\Actions\EditAction::make()

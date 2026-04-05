@@ -32,7 +32,7 @@ class TiemposPromedioChart extends ChartWidget
         // 2. Filtro por Provincia desde el Dashboard
         $provinciaId = $this->filters['provincia_id'] ?? null;
 
-        if ($provinciaId) {
+        if (!empty($provinciaId)) {
             $query->where('provincia_id', $provinciaId);
         }
 

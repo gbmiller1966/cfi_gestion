@@ -60,17 +60,31 @@ class ExpedienteResource extends Resource
                                             ->preload()
                                             ->live() // ¡CLAVE 1! Le avisa al sistema que el valor cambió en tiempo real
                                             ->afterStateUpdated(fn (Forms\Set $set) => $set('localidad_id', null)), // Si cambia la provincia, le vaciamos la localidad que había elegido antes
-                                        Forms\Components\Select::make('localidad_id')
-                                            ->label('Localidad')
-                                            ->required()
-                                            ->searchable()
-                                            ->preload()
-                                            // ¡CLAVE 2! Filtramos las localidades según la provincia seleccionada arriba
-                                            ->relationship(
-                                                name: 'localidad',
-                                                titleAttribute: 'localidad',
-                                                modifyQueryUsing: fn (\Illuminate\Database\Eloquent\Builder $query, Forms\Get $get) =>
-                                                    $query->where('provincia_id', $get('provincia_id'))),
+                                // 1. EL SELECT (Para Crear y Editar)
+                                Forms\Components\Select::make('localidad_id')
+                                    ->label('Localidad')
+                                    ->required()
+                                    ->searchable()
+                                    ->preload()
+                                    ->relationship(
+                                        name: 'localidad',
+                                        titleAttribute: 'localidad', // Asegurate que la columna en la tabla localidades se llame 'localidad'
+                                        modifyQueryUsing: fn (\Illuminate\Database\Eloquent\Builder $query, Forms\Get $get) =>
+                                            $query->where('provincia_id', $get('provincia_id'))
+                                    )
+                                    ->live()
+                                    ->hidden(fn ($operation) => $operation === 'view'), // Oculto en modo visualización
+
+                                // 2. EL PLACEHOLDER (Para Visualización)
+                                Forms\Components\Placeholder::make('localidad_visual')
+                                    ->label('Localidad')
+                                    ->visible(fn ($operation) => $operation === 'view') // Solo visible al "Ver"
+                                    ->content(function ($record) {
+                                        if (!$record || !$record->localidad_id) return '-';
+                                        
+                                        // Buscamos el nombre de la localidad manualmente para que no muestre el ID
+                                        return \App\Models\Localidad::find($record->localidad_id)?->localidad ?? 'No definida';
+                                    }),
                                 Forms\Components\Textarea::make('objeto')
                                     ->required()
                                     ->columnSpanFull(),
@@ -86,15 +100,42 @@ class ExpedienteResource extends Resource
                                             ->relationship('tema', 'tema')
                                             ->searchable()
                                             ->preload(),
+                                        // 1. EL SELECT (Para Crear y Editar)
                                         Forms\Components\Select::make('tipo_id')
                                             ->relationship('tipo', 'tipo')
+                                            ->label('Tipo')
                                             ->searchable()
-                                            ->preload(),
+                                            ->preload()
+                                            ->hidden(fn ($operation) => $operation === 'view'), // Se oculta al visualizar
+
+                                        // 2. EL PLACEHOLDER (Para Visualización)
+                                        Forms\Components\Placeholder::make('tipo_visual')
+                                            ->label('Tipo')
+                                            ->visible(fn ($operation) => $operation === 'view') // Solo se ve al visualizar
+                                            ->content(function ($record) {
+                                                if (!$record || !$record->tipo_id) return '-';
+                                                
+                                                // Buscamos el nombre del tipo manualmente en la tabla 'tipos'
+                                                // Usamos la columna 'tipo' que es donde guardas el texto
+                                                return \App\Models\Tipo::find($record->tipo_id)?->tipo ?? 'Tipo no definido';
+                                            }),
 
                                         // Muestra el estado actual calculado (Solo lectura para que el técnico lo vea)
                                         Forms\Components\Placeholder::make('estado_actual_visual')
                                             ->label('Estado del Contrato')
-                                            ->content(fn ($record) => $record ? $record->estado : 'Borrador / Sin Ingresar'),
+                                            ->content(function ($record) {
+                                                if (!$record) return 'Borrador / Sin Ingresar';
+
+                                                // 1. Si el record tiene un estado_id (que es ese "3" que ves)
+                                                if (isset($record->estado_id)) {
+                                                    // Buscamos el nombre del estado directamente en su tabla
+                                                    $nombreEstado = \App\Models\Estado::find($record->estado_id)?->estado;
+                                                    
+                                                    return $nombreEstado ?? 'Estado no definido';
+                                                }
+
+                                                return 'Borrador / Sin Ingresar';
+                                            }),
 
                                         // El "Botón de Pánico" para bajas o rescisiones
                                         Forms\Components\Select::make('estado_excepcion')
@@ -327,26 +368,80 @@ class ExpedienteResource extends Resource
                         // ---------------------------------------------------------
                         // PESTAÑA 4: HITOS Y NOVEDADES
                         // ---------------------------------------------------------
+                        // Dentro de ExpedienteResource.php, en la Pestaña 4:
+
                         Forms\Components\Tabs\Tab::make('4. Hitos y Novedades')
                             ->schema([
                                 Forms\Components\Repeater::make('hitos')
-                                    ->label('Bitácora del Expediente')
+                                    ->label('Bitácora de Gestión')
                                     ->relationship('hitos')
                                     ->schema([
-                                        Forms\Components\DatePicker::make('fecha')
-                                            ->label('Fecha')
-                                            ->default(now())
-                                            ->required(),
-                                        Forms\Components\Textarea::make('descripcion')
-                                            ->label('Registro / Novedad')
-                                            ->required()
-                                            ->columnSpan(2),
+                                        // 1. MODO VISUALIZACIÓN (Estilizado con Tailwind)
+                                        Forms\Components\Group::make([
+                                            Forms\Components\Grid::make(4)
+                                                ->schema([
+                                                    Forms\Components\Placeholder::make('fecha_v')
+                                                        ->label('Fecha del Registro')
+                                                        ->content(function ($record) {
+                                                            if (!$record || !$record->fecha) return '-';
+                                                            $fecha = ($record->fecha instanceof \Carbon\Carbon) 
+                                                                ? $record->fecha->format('d/m/Y') 
+                                                                : \Carbon\Carbon::parse($record->fecha)->format('d/m/Y');
+                                                            
+                                                            return new \Illuminate\Support\HtmlString("
+                                                                <div class='flex items-center gap-2 text-primary-600 font-bold'>
+                                                                    <svg class='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='set 8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'></path></svg>
+                                                                    <span>{$fecha}</span>
+                                                                </div>
+                                                            ");
+                                                        })
+                                                        ->columnSpan(1),
+
+                                                    Forms\Components\Placeholder::make('descripcion_v')
+                                                        ->label('Detalle de la Gestión')
+                                                        ->content(function ($record) {
+                                                            return new \Illuminate\Support\HtmlString("
+                                                                <div class='p-3 bg-gray-50 rounded-lg border-l-4 border-primary-500 text-gray-700 shadow-sm'>
+                                                                    <span class='italic'>\"{$record->descripcion}\"</span>
+                                                                </div>
+                                                            ");
+                                                        })
+                                                        ->columnSpan(3),
+                                                ]),
+                                        ])
+                                        ->visible(fn ($operation) => $operation === 'view'),
+
+                                        // 2. MODO EDICIÓN/CREACIÓN (Inputs de formulario)
+                                        Forms\Components\Group::make([
+                                            Forms\Components\DatePicker::make('fecha')
+                                                ->label('Fecha')
+                                                ->default(now())
+                                                ->required()
+                                                ->native(false)
+                                                ->displayFormat('d/m/Y'),
+
+                                            Forms\Components\Textarea::make('descripcion')
+                                                ->label('Registro / Novedad')
+                                                ->required()
+                                                ->columnSpanFull(),
+                                        ])
+                                        ->hidden(fn ($operation) => $operation === 'view'),
                                     ])
-                                    ->columns(3)
-                                    ->addActionLabel('Agregar novedad')
-                                    ->defaultItems(0)
-                                    ->reorderableWithButtons(), // Permite ordenar si se olvidó de cargar uno viejo
-                            ]),
+                                    ->addable(fn ($operation) => $operation !== 'view')
+                                    ->deletable(fn ($operation) => $operation !== 'view')
+                                    ->reorderable(fn ($operation) => $operation !== 'view')
+                                    ->itemLabel(function (array $state): ?string {
+                                        if (empty($state['fecha'])) return 'Nueva Novedad';
+                                        try {
+                                            return \Carbon\Carbon::parse($state['fecha'])->format('d/m/Y');
+                                        } catch (\Exception $e) {
+                                            return $state['fecha'];
+                                        }
+                                    })
+                                    ->collapsible()
+                                    ->collapsed() // 💡 Los 600 expedientes se verán más ordenados si entran colapsados
+                                    ->defaultItems(0),
+                            ])
                     ])->columnSpanFull(),
             ]);
     }
@@ -458,6 +553,12 @@ class ExpedienteResource extends Resource
                 })
                 ->visible(fn () => auth()->user()->hasAnyRole(['Admin', 'Director'])),
         ])
+        ->paginated([10, 25, 50, 100]) // Forzamos las opciones de página
+        ->defaultPaginationPageOption(10)
+        // Obligamos a que NO sea simple para que muestre el contador de la izquierda
+        ->extremePaginationLinks()
+        ->deferLoading()
+
         ->filters([
             // Filtro por Estado
             Tables\Filters\SelectFilter::make('estado_id')
@@ -482,8 +583,22 @@ class ExpedienteResource extends Resource
                 ->visible(fn () => auth()->user()->hasAnyRole(['Admin', 'Director'])),
         ])
         ->actions([
-            Tables\Actions\DeleteAction::make()->visible(fn() => auth()->user()->hasRole('Admin')),
-            Tables\Actions\EditAction::make()->visible(fn() => auth()->user()->hasRole('Admin')),
+            // 💡 Acción de Ver: Misma pestaña, visible para todos
+            Tables\Actions\ViewAction::make()
+                ->label('Ver')
+                ->icon('heroicon-m-eye')
+                ->openUrlInNewTab(false), // 👈 Aseguramos misma pestaña
+
+            // 💡 Acción de Editar: Misma pestaña, visible para Admin y Técnico
+            Tables\Actions\EditAction::make()
+                ->label('Editar')
+                ->icon('heroicon-m-pencil-square')
+                ->openUrlInNewTab(false) // 👈 Aseguramos misma pestaña
+                ->visible(fn() => auth()->user()->hasAnyRole(['Admin', 'Técnico'])),
+
+            // 💡 Acción de Borrar: Solo para el Admin
+            Tables\Actions\DeleteAction::make()
+                ->visible(fn() => auth()->user()->hasRole('Admin')),
         ])
         ->bulkActions([
             Tables\Actions\BulkActionGroup::make([

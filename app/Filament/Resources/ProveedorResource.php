@@ -100,19 +100,38 @@ class ProveedorResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('numero_proveedor')
+/*                 Tables\Columns\TextColumn::make('numero_proveedor')
                     ->label('N° Prov.')
-                    ->sortable(),
+                    ->sortable(), */
                 Tables\Columns\TextColumn::make('razon_social')
                     ->label('Razón Social')
+                    ->limit(40)
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('cuit')
+/*                 Tables\Columns\TextColumn::make('cuit')
                     ->label('CUIT')
-                    ->searchable(),
+                    ->searchable(), */
                 Tables\Columns\TextColumn::make('contacto_nombre')
                     ->label('Contacto')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('contacto_celular')
+                    ->label('Celular')
+                    ->icon('heroicon-m-chat-bubble-left-right')
+                    ->color('success') // Color verde WhatsApp
+                    ->copyable() // Por si Miller solo quiere copiar el número
+                    ->url(fn ($record) => $record->contacto_celular 
+                        ? "https://wa.me/" . preg_replace('/[^0-9]/', '', $record->contacto_celular) 
+                        : null
+                    )
+                    ->openUrlInNewTab(),
+                Tables\Columns\TextColumn::make('contacto_email')
+                    ->label('Correo Electrónico')
+                    ->icon('heroicon-m-envelope')
+                    ->color('primary')
+                    ->url(fn ($record) => $record->contacto_email 
+                        ? "mailto:{$record->contacto_email}" 
+                        : null
+                    ),
                 Tables\Columns\TextColumn::make('provincia.provincia')
                     ->label('Provincia')
                     ->badge(),

@@ -21,4 +21,29 @@ class CreateExpediente extends CreateRecord
     
         return $data;
     }
+    
+    protected function getRedirectUrl(): string
+    {
+        // 💡 Al terminar de crear, vuelve al listado (Escritorio)
+        return url('/tecnico');
+    }
+
+    protected function getCancelFormAction(): \Filament\Actions\Action
+    {
+        return parent::getCancelFormAction()
+            ->label('Cancelar') // Por si querés cambiar el texto
+            ->color('gray')      // Un color neutro para no confundir con "Guardar"
+            ->url(url('/tecnico')); // Lo manda al Escritorio
+    }
+
+    public function getBreadcrumbs(): array
+    {
+        return [
+            // 💡 Cambiamos el primer enlace para que apunte al Escritorio (Dashboard)
+            url('/tecnico') => 'Escritorio',
+            
+            // El último elemento es la página actual (no lleva link)
+            'Ver' => 'Nuevo Expediente', 
+        ];
+    }
 }

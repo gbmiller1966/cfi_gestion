@@ -86,9 +86,24 @@ class ContraparteResource extends Resource
                 Tables\Columns\TextColumn::make('apellido')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('nombre')
-                    ->searchable()
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('celular')
+                    ->label('Celular')
+                    ->icon('heroicon-m-chat-bubble-left-right')
+                    ->color('success') // Color verde WhatsApp
+                    ->copyable() // Por si Miller solo quiere copiar el número
+                    ->url(fn ($record) => $record->celular 
+                        ? "https://wa.me/" . preg_replace('/[^0-9]/', '', $record->celular) 
+                        : null
+                    )
+                    ->openUrlInNewTab(),
+                Tables\Columns\TextColumn::make('email')
+                    ->label('Correo Electrónico')
+                    ->icon('heroicon-m-envelope')
+                    ->color('primary')
+                    ->url(fn ($record) => $record->email 
+                        ? "mailto:{$record->email}" 
+                        : null
+                    ),
                 Tables\Columns\TextColumn::make('provincia.provincia')
                     ->label('Provincia')
                     ->badge()
@@ -97,9 +112,6 @@ class ContraparteResource extends Resource
                     ->label('Dependencia')
                     ->searchable()
                     ->limit(25),
-                Tables\Columns\TextColumn::make('email')
-                    ->label('Email')
-                    ->searchable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('provincia_id')

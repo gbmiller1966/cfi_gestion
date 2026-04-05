@@ -32,7 +32,7 @@ class ExpedientesStats extends BaseWidget
         $filters = $this->filters;
         $provinciaId = $filters['provincia_id'] ?? null;
 
-        if ($provinciaId) {
+        if (!empty($provinciaId)) {
             $query->where('provincia_id', $provinciaId);
         }
 
@@ -72,17 +72,29 @@ class ExpedientesStats extends BaseWidget
             Stat::make('Demora Derivación', $demoraDerivacion)
                 ->description('CFI -> Área (+15 días)')
                 ->descriptionIcon('heroicon-m-clock')
-                ->color($demoraDerivacion > 0 ? 'warning' : 'success'),
+                ->color($demoraDerivacion > 0 ? 'danger' : 'success') // Cambié warning por danger para que resalte más el problema
+                ->url(route('filament.admin.pages.dashboard', [
+                    'filtro_demora' => 'derivacion',
+                    'provincia_id' => $this->filters['provincia_id'] ?? null, // Mantenemos la provincia si está seleccionada
+                ])),
 
             Stat::make('Demora TDRs', $demoraTdr)
                 ->description('En Área -> TDR (+15 días)')
                 ->descriptionIcon('heroicon-m-document-text')
-                ->color($demoraTdr > 0 ? 'warning' : 'success'),
+                ->color($demoraTdr > 0 ? 'danger' : 'success')
+                ->url(route('filament.admin.pages.dashboard', [
+                    'filtro_demora' => 'tdr',
+                    'provincia_id' => $this->filters['provincia_id'] ?? null,
+                ])),
 
             Stat::make('Demora Contrato', $demoraContrato)
                 ->description('Dir -> Contrato (+15 días)')
                 ->descriptionIcon('heroicon-m-pencil-square')
-                ->color($demoraContrato > 0 ? 'warning' : 'success'),
+                ->color($demoraContrato > 0 ? 'danger' : 'success')
+                ->url(route('filament.admin.pages.dashboard', [
+                    'filtro_demora' => 'contrato',
+                    'provincia_id' => $this->filters['provincia_id'] ?? null,
+                ])),
         ];
     }
 }

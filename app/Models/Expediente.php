@@ -37,37 +37,43 @@ class Expediente extends Model
     protected static function booted()
     {
         static::saving(function ($expediente) {
-            // CÁLCULO DE MONTO TOTAL
-            $expediente->monto_imputado = ($expediente->monto_convenido ?? 0) + ($expediente->monto_cfi ?? 0);
+            // 1. CÁLCULO DE MONTO TOTAL
+            // Usamos floatval para asegurar que sean números y no rompa la suma
+            $expediente->monto_imputado = floatval($expediente->monto_convenido) + floatval($expediente->monto_cfi);
 
-            // 1. AUTO-COMPLETAR LA REGIÓN
-            if ($expediente->provincia_id) {
-                $provincia = \App\Models\Provincia::find($expediente->provincia_id);
-                if ($provincia) {
-                    $expediente->region_id = $provincia->region_id;
+            // 2. AUTO-COMPLETAR LA REGIÓN (Solo si cambió la provincia y no tenemos la región)
+            if ($expediente->isDirty('provincia_id') && $expediente->provincia_id) {
+                // Usamos query builder directo para evitar cargar el modelo completo y disparar eventos
+                $regionId = \DB::table('provincias')
+                    ->where('id', $expediente->provincia_id)
+                    ->value('region_id');
+                    
+                if ($regionId) {
+                    $expediente->region_id = $regionId;
                 }
             }
 
-            // 2. CÁLCULO DEL ESTADO (Cascada de fin a inicio)
+            // 3. CÁLCULO DEL ESTADO (Cascada)
+            // Si hay una excepción manual, manda esa.
             if (!empty($expediente->estado_excepcion)) {
-                $expediente->estado_id = $expediente->estado_excepcion; // Suponiendo que renombraste la columna estado_contrato_id a estado_id
-                return;
-            }
-
-            if (!empty($expediente->f_envio_archivo)) {
-                $expediente->estado_id = 7; // Archivado
-            } elseif (!empty($expediente->f_aprobacion_sec_gen)) {
-                $expediente->estado_id = 6; // Finalizado
-            } elseif (!empty($expediente->f_inicio_contrato)) {
-                $expediente->estado_id = 5; // En ejecución
-            } elseif (!empty($expediente->f_firma_director_tdr)) {
-                $expediente->estado_id = 4; // En trámite
-            } elseif (!empty($expediente->f_ingreso_area)) {
-                $expediente->estado_id = 3; // En análisis
-            } elseif (!empty($expediente->f_ingreso_cfi)) {
-                $expediente->estado_id = 2; // Ingresado al CFI
+                $expediente->estado_id = $expediente->estado_excepcion;
             } else {
-                $expediente->estado_id = 1; // Borrador
+                // Determinamos el estado según las fechas
+                if ($expediente->f_envio_archivo) {
+                    $expediente->estado_id = 7; // Archivado
+                } elseif ($expediente->f_aprobacion_sec_gen) {
+                    $expediente->estado_id = 6; // Finalizado
+                } elseif ($expediente->f_inicio_contrato) {
+                    $expediente->estado_id = 5; // En ejecución
+                } elseif ($expediente->f_firma_director_tdr) {
+                    $expediente->estado_id = 4; // En trámite
+                } elseif ($expediente->f_ingreso_area) {
+                    $expediente->estado_id = 3; // En análisis
+                } elseif ($expediente->f_ingreso_cfi) {
+                    $expediente->estado_id = 2; // Ingresado al CFI
+                } else {
+                    $expediente->estado_id = 1; // Borrador
+                }
             }
         });
     }
@@ -91,7 +97,7 @@ class Expediente extends Model
 
     // --- RELACIONES HIJAS Y PIVOTS ---
     public function proveedores(): BelongsToMany { return $this->belongsToMany(Proveedor::class, 'expediente_proveedor'); }
-    public function colaboradores(): BelongsToMany { return $this->belongsToMany(User::class, 'expediente_user'); }
+    public function colaboradores(): BelongsToMany { return $this->belongsToMany(User::class, 'expediente_colaboradores'); }
     public function expediente_informes(): HasMany { return $this->hasMany(ExpedienteInforme::class); }
     public function hitos(): HasMany { return $this->hasMany(ExpedienteHito::class); }
     public function informes(): HasMany {return $this->expediente_informes();}

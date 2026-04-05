@@ -48,6 +48,7 @@ class Dashboard extends BaseDashboard
                             ->options(Provincia::pluck('provincia', 'id'))
                             ->searchable()
                             ->preload()
+                            ->live()
                             ->nullable() 
                             ->placeholder('Todas las provincias (CFI Total)'),
                     ])
