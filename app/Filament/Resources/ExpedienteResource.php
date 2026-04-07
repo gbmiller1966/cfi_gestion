@@ -11,6 +11,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Carbon\Carbon;
+use Doctrine\DBAL\Query\Limit;
 
 class ExpedienteResource extends Resource
 {
@@ -81,7 +82,7 @@ class ExpedienteResource extends Resource
                                     ->visible(fn ($operation) => $operation === 'view') // Solo visible al "Ver"
                                     ->content(function ($record) {
                                         if (!$record || !$record->localidad_id) return '-';
-                                        
+
                                         // Buscamos el nombre de la localidad manualmente para que no muestre el ID
                                         return \App\Models\Localidad::find($record->localidad_id)?->localidad ?? 'No definida';
                                     }),
@@ -114,7 +115,7 @@ class ExpedienteResource extends Resource
                                             ->visible(fn ($operation) => $operation === 'view') // Solo se ve al visualizar
                                             ->content(function ($record) {
                                                 if (!$record || !$record->tipo_id) return '-';
-                                                
+
                                                 // Buscamos el nombre del tipo manualmente en la tabla 'tipos'
                                                 // Usamos la columna 'tipo' que es donde guardas el texto
                                                 return \App\Models\Tipo::find($record->tipo_id)?->tipo ?? 'Tipo no definido';
@@ -130,7 +131,7 @@ class ExpedienteResource extends Resource
                                                 if (isset($record->estado_id)) {
                                                     // Buscamos el nombre del estado directamente en su tabla
                                                     $nombreEstado = \App\Models\Estado::find($record->estado_id)?->estado;
-                                                    
+
                                                     return $nombreEstado ?? 'Estado no definido';
                                                 }
 
@@ -384,10 +385,10 @@ class ExpedienteResource extends Resource
                                                         ->label('Fecha del Registro')
                                                         ->content(function ($record) {
                                                             if (!$record || !$record->fecha) return '-';
-                                                            $fecha = ($record->fecha instanceof \Carbon\Carbon) 
-                                                                ? $record->fecha->format('d/m/Y') 
+                                                            $fecha = ($record->fecha instanceof \Carbon\Carbon)
+                                                                ? $record->fecha->format('d/m/Y')
                                                                 : \Carbon\Carbon::parse($record->fecha)->format('d/m/Y');
-                                                            
+
                                                             return new \Illuminate\Support\HtmlString("
                                                                 <div class='flex items-center gap-2 text-primary-600 font-bold'>
                                                                     <svg class='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='set 8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'></path></svg>
@@ -457,13 +458,15 @@ class ExpedienteResource extends Resource
             Tables\Columns\TextColumn::make('gde_numero')
                 ->label('GDE')
                 ->searchable()
-                ->sortable(),
+                ->sortable()
+                ->limit(15),
 
             Tables\Columns\TextColumn::make('titulo')
                 ->label('Título')
                 ->searchable()
                 ->wrap()
-                ->words(10),
+                // ->words(5)
+                ->limit(20),
 
             Tables\Columns\TextColumn::make('provincia.provincia')
                 ->label('Provincia')
@@ -481,7 +484,7 @@ class ExpedienteResource extends Resource
                 ->sortable() */
             Tables\Columns\TextColumn::make('monto_imputado')
                 ->label('Monto Imputado')
-                ->money('ARS') // O tu moneda local
+                //->money('ARS')  O tu moneda local
                 ->sortable()
                 ->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total Imputado'))
                 ->visible(fn () => !auth()->user()->hasRole('Técnico')),
@@ -553,11 +556,9 @@ class ExpedienteResource extends Resource
                 })
                 ->visible(fn () => auth()->user()->hasAnyRole(['Admin', 'Director'])),
         ])
-        ->paginated([10, 25, 50, 100]) // Forzamos las opciones de página
+        ->paginated([10, 25, 50, 100])
         ->defaultPaginationPageOption(10)
-        // Obligamos a que NO sea simple para que muestre el contador de la izquierda
         ->extremePaginationLinks()
-        ->deferLoading()
 
         ->filters([
             // Filtro por Estado
@@ -606,7 +607,9 @@ class ExpedienteResource extends Resource
             Tables\Actions\DeleteBulkAction::make()
                 ->visible(fn () => auth()->user()->hasRole('Admin')),
             ]),
-        ]);
+        ])
+        ->deferLoading()
+        ->poll('30s');
     }
 
     // EL FILTRO MÁGICO PARA QUE EL TÉCNICO VEA SOLO LO SUYO

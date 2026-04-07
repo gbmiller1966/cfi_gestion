@@ -31,7 +31,7 @@ class ExpedienteTableWidget extends BaseWidget
 
         // 💡 Preparamos la consulta para contar cuántos hay en esta situación
         $query = \App\Models\Expediente::query();
-        
+
         // Aplicamos seguridad de Director
         if (auth()->user()->hasRole('Director')) {
             $query->where('direccion_id', auth()->user()->direccion_id);
@@ -66,6 +66,11 @@ class ExpedienteTableWidget extends BaseWidget
             'contrato' => "⚠️ Expedientes con Demora en Contrato: {$count}",
             default => 'Listado General de Gestión',
         };
+    }
+
+    protected function isTablePaginationSimple(): bool
+    {
+        return false;
     }
 
     public function table(Table $table): Table
@@ -115,9 +120,10 @@ class ExpedienteTableWidget extends BaseWidget
 
                 return $query;
             })
-            ->persistSortInSession()
 
-            ->paginated([10, 25, 50])
+            ->persistSortInSession()
+            // 💡 ESTA ES LA COMBINACIÓN GANADORA PARA WIDGETS:
+            ->paginated([10, 25, 50, 100])
             ->defaultPaginationPageOption(10)
             ->extremePaginationLinks()
 
@@ -131,7 +137,7 @@ class ExpedienteTableWidget extends BaseWidget
 
                 Tables\Columns\TextColumn::make('titulo')
                     ->label('Título')
-                    ->limit(40)
+                    ->limit(35)
                     ->tooltip(fn (Expediente $record): string => $record->titulo)
                     ->wrap()
                     ->searchable(),
@@ -148,7 +154,8 @@ class ExpedienteTableWidget extends BaseWidget
                 Tables\Columns\TextColumn::make('monto_imputado')
                     ->label('Monto Imputado')
                     ->money('ARS')
-                    ->sortable(),
+                    ->sortable()
+                    ->visible(fn () => ! auth()->user()->hasRole('Técnico')),
 
                 Tables\Columns\TextColumn::make('estado.estado')
                     ->label('Estado')
@@ -170,14 +177,17 @@ class ExpedienteTableWidget extends BaseWidget
                     ->label('Días (CFI-Área)')
                     ->getStateUsing(fn ($record) => $record->f_ingreso_cfi && $record->f_ingreso_area
                         ? \Carbon\Carbon::parse($record->f_ingreso_cfi)->diffInDays($record->f_ingreso_area) . ' d.'
-                        : '-'),
+                        : '-')
+                    ->visible(fn () => ! auth()->user()->hasRole('Técnico')),
 
                 Tables\Columns\TextColumn::make('dias_area_dir')
                     ->label('Días (Área-Dir)')
                     ->getStateUsing(fn ($record) => $record->f_ingreso_area && $record->f_elevacion_tdr
                         ? \Carbon\Carbon::parse($record->f_ingreso_area)->diffInDays($record->f_elevacion_tdr) . ' d.'
-                        : '-'),
+                        : '-')
+                    ->visible(fn () => ! auth()->user()->hasRole('Técnico')),
             ])
+
             ->filters([
                 Tables\Filters\SelectFilter::make('estado_id')
                     ->label('Estado')
