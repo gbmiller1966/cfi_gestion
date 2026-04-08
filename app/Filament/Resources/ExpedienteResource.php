@@ -556,9 +556,9 @@ class ExpedienteResource extends Resource
                 })
                 ->visible(fn () => auth()->user()->hasAnyRole(['Admin', 'Director'])),
         ])
-        ->paginated([10, 25, 50, 100])
+        ->paginated([10, 25, 50, 100, 'all' => 'Todos'])
         ->defaultPaginationPageOption(10)
-        ->extremePaginationLinks()
+        //->extremePaginationLinks()
 
         ->filters([
             // Filtro por Estado
@@ -607,9 +607,7 @@ class ExpedienteResource extends Resource
             Tables\Actions\DeleteBulkAction::make()
                 ->visible(fn () => auth()->user()->hasRole('Admin')),
             ]),
-        ])
-        ->deferLoading()
-        ->poll('30s');
+        ]);
     }
 
     // EL FILTRO MÁGICO PARA QUE EL TÉCNICO VEA SOLO LO SUYO
@@ -649,5 +647,10 @@ public static function getEloquentQuery(): Builder
             'view' => Pages\ViewExpediente::route('/{record}'),
             'edit' => Pages\EditExpediente::route('/{record}/edit'),
         ];
+    }
+
+    protected static function isTablePaginationSimple(): bool
+    {
+        return false;
     }
 }

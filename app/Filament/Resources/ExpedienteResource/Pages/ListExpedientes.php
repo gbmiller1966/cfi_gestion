@@ -16,7 +16,8 @@ class ListExpedientes extends ListRecords
      */
     public function getMaxContentWidth(): ?string
     {
-        return auth()->user()->hasRole('Director') ? 'full' : null;
+        //return auth()->user()->hasRole('Director') ? 'full' : null;
+        return 'full';
     }
 
     /**
@@ -82,4 +83,10 @@ class ListExpedientes extends ListRecords
             \App\Filament\Resources\ExpedienteResource\Widgets\EstadoExpedientesChart::class,
         ];
     }
+
+    protected function isTablePaginationSimple(): bool
+    {
+        return false;
+    }
+
 }

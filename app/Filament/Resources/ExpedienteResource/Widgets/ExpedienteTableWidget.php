@@ -122,8 +122,7 @@ class ExpedienteTableWidget extends BaseWidget
             })
 
             ->persistSortInSession()
-            // 💡 ESTA ES LA COMBINACIÓN GANADORA PARA WIDGETS:
-            ->paginated([10, 25, 50, 100])
+            ->paginated([10, 25, 50, 100, 'all' => 'Todos'])
             ->defaultPaginationPageOption(10)
             ->extremePaginationLinks()
 
