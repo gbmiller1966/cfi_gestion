@@ -89,10 +89,10 @@ class ContraparteResource extends Resource
                 Tables\Columns\TextColumn::make('celular')
                     ->label('Celular')
                     ->icon('heroicon-m-chat-bubble-left-right')
-                    ->color('success') // Color verde WhatsApp
-                    ->copyable() // Por si Miller solo quiere copiar el número
-                    ->url(fn ($record) => $record->celular 
-                        ? "https://wa.me/" . preg_replace('/[^0-9]/', '', $record->celular) 
+                    ->color('success')
+                    ->copyable()
+                    ->url(fn ($record) => $record->celular
+                        ? "https://wa.me/" . preg_replace('/[^0-9]/', '', $record->celular)
                         : null
                     )
                     ->openUrlInNewTab(),
@@ -100,8 +100,8 @@ class ContraparteResource extends Resource
                     ->label('Correo Electrónico')
                     ->icon('heroicon-m-envelope')
                     ->color('primary')
-                    ->url(fn ($record) => $record->email 
-                        ? "mailto:{$record->email}" 
+                    ->url(fn ($record) => $record->email
+                        ? "mailto:{$record->email}"
                         : null
                     ),
                 Tables\Columns\TextColumn::make('provincia.provincia')

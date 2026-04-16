@@ -16,6 +16,7 @@ class ExpedienteTableWidget extends BaseWidget
     protected static bool $isLazy = false;
 
     protected int | string | array $columnSpan = 'full';
+    protected bool $isSimplePagination = false;
     // protected static ?string $heading = 'Listado de Gestión de Expedientes';
 // app/Filament/Resources/ExpedienteResource/Widgets/ExpedienteTableWidget.php
 
@@ -68,10 +69,10 @@ class ExpedienteTableWidget extends BaseWidget
         };
     }
 
-    protected function isTablePaginationSimple(): bool
+/*     protected function isTablePaginationSimple(): bool
     {
         return false;
-    }
+    } */
 
     public function table(Table $table): Table
     {
@@ -122,9 +123,19 @@ class ExpedienteTableWidget extends BaseWidget
             })
 
             ->persistSortInSession()
-            ->paginated([10, 25, 50, 100, 'all' => 'Todos'])
+            // 💡 CAMBIO 1: Usamos el array simple (como en los Resources que funcionan)
+            // Eliminamos el 'all' => 'Todos' por ahora para asegurar compatibilidad total
+            ->paginated([5, 10, 25, 50, 100])
             ->defaultPaginationPageOption(10)
+
+            // 💡 CAMBIO 2: Reforzamos la visibilidad de los links
             ->extremePaginationLinks()
+
+            // 💡 CAMBIO 3: ESTA ES LA CLAVE PARA WIDGETS
+            // Forzamos a que el "footer" de la tabla use el diseño ancho
+            ->contentGrid([
+                'md' => 1,
+            ])
 
             ->columns([
                 Tables\Columns\TextColumn::make('gde_numero')
