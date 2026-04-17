@@ -3,67 +3,30 @@
 namespace App\Filament\Pages;
 
 use Filament\Pages\Dashboard as BaseDashboard;
-use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Form;
-use App\Models\Provincia;
+use App\Filament\Resources\ExpedienteResource\Widgets\ExpedienteTableWidget;
 
 class Dashboard extends BaseDashboard
 {
-    use HasFiltersForm;
-
-    /**
-     * Registramos los widgets que deben aparecer en este Dashboard.
-     */
+    protected static ?string $navigationLabel = 'Expedientes';
+    protected static ?string $title = 'Gestión de Expedientes';
+    protected static ?int $navigationSort = 1;
+    // Eliminamos los filtros y los otros widgets para que solo quede la tabla
     public function getWidgets(): array
     {
         return [
-            \App\Filament\Resources\ExpedienteResource\Widgets\ExpedientesStats::class,
-            \App\Filament\Resources\ExpedienteResource\Widgets\TiemposPromedioChart::class,
-            \App\Filament\Resources\ExpedienteResource\Widgets\ExpedienteTableWidget::class,
+            ExpedienteTableWidget::class,
         ];
     }
 
-    /**
-     * Definimos cuántas columnas de ancho tiene el dashboard (por defecto es 2).
-     */
     public function getColumns(): int | string | array
     {
-        return 2;
+        return 1; // Una sola columna para que la tabla use todo el ancho
     }
 
-    /**
-     * Formulario de filtros superior.
-     */
-    public function filtersForm(Form $form): Form
-    {
-        return $form
-            ->schema([
-                Section::make('Filtros de Gestión')
-                    ->description('Seleccione una provincia para actualizar las estadísticas y promedios.')
-                    ->schema([
-                        Select::make('provincia_id')
-                            ->label('Provincia')
-                            ->options(Provincia::pluck('provincia', 'id'))
-                            ->searchable()
-                            ->preload()
-                            ->live()
-                            ->nullable() 
-                            ->placeholder('Todas las provincias (CFI Total)'),
-                    ])
-                    ->columns(1)
-                    ->visible(fn () => auth()->user()->hasRole('Director')),
-            ]);
-    }
-
-    /**
-     * Título dinámico de la página.
-     */
     public function getTitle(): string
     {
         return auth()->user()->hasRole('Director') 
-            ? 'Panel de Control de Gestión' 
+            ? 'Gestión de Expedientes' 
             : 'Escritorio';
     }
 }

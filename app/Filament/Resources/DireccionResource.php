@@ -18,6 +18,7 @@ class DireccionResource extends Resource
     protected static ?string $model = Direccion::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?int $navigationSort = 3;
 
     protected static ?string $modelLabel = 'Dirección'; // Singular (para el botón "Crear Dirección")
     protected static ?string $pluralModelLabel = 'Direcciones'; // Plural (para los títulos)

@@ -18,6 +18,8 @@ class InformeResource extends Resource
     protected static ?string $model = Informe::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationGroup = 'Tablas Maestras';
+    protected static ?int $navigationSort = 5;
 
     protected static ?string $modelLabel = 'Informe'; // Singular (para el botón "Crear Dirección")
     protected static ?string $pluralModelLabel = 'Informes'; // Plural (para los títulos)

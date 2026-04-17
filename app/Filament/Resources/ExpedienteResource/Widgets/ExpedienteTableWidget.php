@@ -69,11 +69,6 @@ class ExpedienteTableWidget extends BaseWidget
         };
     }
 
-/*     protected function isTablePaginationSimple(): bool
-    {
-        return false;
-    } */
-
     public function table(Table $table): Table
     {
         return $table
@@ -126,16 +121,13 @@ class ExpedienteTableWidget extends BaseWidget
             // 💡 CAMBIO 1: Usamos el array simple (como en los Resources que funcionan)
             // Eliminamos el 'all' => 'Todos' por ahora para asegurar compatibilidad total
             ->paginated([5, 10, 25, 50, 100])
-            ->defaultPaginationPageOption(10)
+            ->defaultPaginationPageOption(25)
 
             // 💡 CAMBIO 2: Reforzamos la visibilidad de los links
             ->extremePaginationLinks()
 
-            // 💡 CAMBIO 3: ESTA ES LA CLAVE PARA WIDGETS
-            // Forzamos a que el "footer" de la tabla use el diseño ancho
-            ->contentGrid([
-                'md' => 1,
-            ])
+            ->actionsColumnLabel('Acciones') 
+            ->actionsPosition(Tables\Enums\ActionsPosition::AfterColumns)
 
             ->columns([
                 Tables\Columns\TextColumn::make('gde_numero')
@@ -184,24 +176,42 @@ class ExpedienteTableWidget extends BaseWidget
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('dias_cfi_area')
-                    ->label('Días (CFI-Área)')
+                    ->label('CFI - Área')
+                    ->alignment('center')
                     ->getStateUsing(fn ($record) => $record->f_ingreso_cfi && $record->f_ingreso_area
                         ? \Carbon\Carbon::parse($record->f_ingreso_cfi)->diffInDays($record->f_ingreso_area) . ' d.'
                         : '-')
                     ->visible(fn () => ! auth()->user()->hasRole('Técnico')),
 
                 Tables\Columns\TextColumn::make('dias_area_dir')
-                    ->label('Días (Área-Dir)')
+                    ->label('Área - Dir')
+                    ->alignment('center')
                     ->getStateUsing(fn ($record) => $record->f_ingreso_area && $record->f_elevacion_tdr
                         ? \Carbon\Carbon::parse($record->f_ingreso_area)->diffInDays($record->f_elevacion_tdr) . ' d.'
                         : '-')
                     ->visible(fn () => ! auth()->user()->hasRole('Técnico')),
             ])
-
             ->filters([
+                // 1. Filtro por Estado (Ya lo tenías, lo dejamos impecable)
                 Tables\Filters\SelectFilter::make('estado_id')
                     ->label('Estado')
-                    ->relationship('estado', 'estado'),
+                    ->relationship('estado', 'estado')
+                    ->preload(),
+
+                // 2. Filtro por Provincia
+                Tables\Filters\SelectFilter::make('provincia_id')
+                    ->label('Provincia')
+                    ->relationship('provincia', 'provincia')
+                    ->searchable() // Permite escribir para buscar la provincia
+                    ->preload(),
+
+                // 3. Filtro por Técnico a cargo
+                Tables\Filters\SelectFilter::make('tecnico_id')
+                    ->label('Técnico a cargo')
+                    ->relationship('tecnico', 'apellido') // Usamos el apellido para el listado
+                    ->searchable()
+                    ->preload()
+                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->apellido} {$record->nombre}"), // Muestra Apellido y Nombre
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()

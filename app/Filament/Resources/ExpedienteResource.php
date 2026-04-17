@@ -179,6 +179,7 @@ class ExpedienteResource extends Resource
                                     ->relationship('contraparte', 'apellido')
                                     ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->apellido}, {$record->nombre} ({$record->provincia?->provincia})")
                                     ->searchable(['apellido', 'nombre'])
+                                    ->preload()
                                     ->getSearchResultsUsing(fn (string $search): array => \App\Models\Contraparte::where('apellido', 'like', "%{$search}%")
                                         ->orWhere('nombre', 'like', "%{$search}%")
                                         ->limit(50) // Trae los mejores 50 resultados según lo que escribió
@@ -366,83 +367,49 @@ class ExpedienteResource extends Resource
                                     ])->columns(2),
                             ]),
 
-                        // ---------------------------------------------------------
-                        // PESTAÑA 4: HITOS Y NOVEDADES
-                        // ---------------------------------------------------------
-                        // Dentro de ExpedienteResource.php, en la Pestaña 4:
+                    // ---------------------------------------------------------
+                    // PESTAÑA 4: Hitos
+                    // ---------------------------------------------------------
+                    Forms\Components\Tabs\Tab::make('4. Hitos y Novedades')
+                        ->schema([
+                            // --- 1. BLOQUE DE VISUALIZACIÓN (Agrupado por Fecha) ---
+                            // Este bloque solo se ve cuando entrás a "Ver" el expediente
+                            Forms\Components\Placeholder::make('bitacora_agrupada')
+                                ->label('Bitácora de Gestión')
+                                ->visible(fn ($operation) => $operation === 'view')
+                                ->content(fn ($record) => view('filament.components.bitacora-agrupada', [
+                                    'hitos' => $record->hitos()
+                                                    ->orderBy('fecha', 'desc')
+                                                    ->get()
+                                                    ->groupBy(fn($item) => \Carbon\Carbon::parse($item->fecha)->format('d/m/Y'))
+                                ])),
 
-                        Forms\Components\Tabs\Tab::make('4. Hitos y Novedades')
-                            ->schema([
-                                Forms\Components\Repeater::make('hitos')
-                                    ->label('Bitácora de Gestión')
-                                    ->relationship('hitos')
-                                    ->schema([
-                                        // 1. MODO VISUALIZACIÓN (Estilizado con Tailwind)
-                                        Forms\Components\Group::make([
-                                            Forms\Components\Grid::make(4)
-                                                ->schema([
-                                                    Forms\Components\Placeholder::make('fecha_v')
-                                                        ->label('Fecha del Registro')
-                                                        ->content(function ($record) {
-                                                            if (!$record || !$record->fecha) return '-';
-                                                            $fecha = ($record->fecha instanceof \Carbon\Carbon)
-                                                                ? $record->fecha->format('d/m/Y')
-                                                                : \Carbon\Carbon::parse($record->fecha)->format('d/m/Y');
+                            // --- 2. BLOQUE DE EDICIÓN (Tu Repeater original) ---
+                            // Este bloque se ve en "Crear" y "Editar", permitiendo al técnico cargar datos
+                            Forms\Components\Repeater::make('hitos')
+                                ->label('Carga de Novedades')
+                                ->relationship('hitos')
+                                ->hidden(fn ($operation) => $operation === 'view') // Se oculta en modo vista
+                                ->schema([
+                                    Forms\Components\DatePicker::make('fecha')
+                                        ->label('Fecha')
+                                        ->default(now())
+                                        ->required()
+                                        ->native(false)
+                                        ->displayFormat('d/m/Y'),
 
-                                                            return new \Illuminate\Support\HtmlString("
-                                                                <div class='flex items-center gap-2 text-primary-600 font-bold'>
-                                                                    <svg class='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='set 8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'></path></svg>
-                                                                    <span>{$fecha}</span>
-                                                                </div>
-                                                            ");
-                                                        })
-                                                        ->columnSpan(1),
-
-                                                    Forms\Components\Placeholder::make('descripcion_v')
-                                                        ->label('Detalle de la Gestión')
-                                                        ->content(function ($record) {
-                                                            return new \Illuminate\Support\HtmlString("
-                                                                <div class='p-3 bg-gray-50 rounded-lg border-l-4 border-primary-500 text-gray-700 shadow-sm'>
-                                                                    <span class='italic'>\"{$record->descripcion}\"</span>
-                                                                </div>
-                                                            ");
-                                                        })
-                                                        ->columnSpan(3),
-                                                ]),
-                                        ])
-                                        ->visible(fn ($operation) => $operation === 'view'),
-
-                                        // 2. MODO EDICIÓN/CREACIÓN (Inputs de formulario)
-                                        Forms\Components\Group::make([
-                                            Forms\Components\DatePicker::make('fecha')
-                                                ->label('Fecha')
-                                                ->default(now())
-                                                ->required()
-                                                ->native(false)
-                                                ->displayFormat('d/m/Y'),
-
-                                            Forms\Components\Textarea::make('descripcion')
-                                                ->label('Registro / Novedad')
-                                                ->required()
-                                                ->columnSpanFull(),
-                                        ])
-                                        ->hidden(fn ($operation) => $operation === 'view'),
-                                    ])
-                                    ->addable(fn ($operation) => $operation !== 'view')
-                                    ->deletable(fn ($operation) => $operation !== 'view')
-                                    ->reorderable(fn ($operation) => $operation !== 'view')
-                                    ->itemLabel(function (array $state): ?string {
-                                        if (empty($state['fecha'])) return 'Nueva Novedad';
-                                        try {
-                                            return \Carbon\Carbon::parse($state['fecha'])->format('d/m/Y');
-                                        } catch (\Exception $e) {
-                                            return $state['fecha'];
-                                        }
-                                    })
-                                    ->collapsible()
-                                    ->collapsed() // 💡 Los 600 expedientes se verán más ordenados si entran colapsados
-                                    ->defaultItems(0),
-                            ])
+                                    Forms\Components\Textarea::make('descripcion')
+                                        ->label('Registro / Novedad')
+                                        ->required()
+                                        ->columnSpanFull(),
+                                ])
+                                ->itemLabel(fn (array $state): ?string => 
+                                    !empty($state['fecha']) ? \Carbon\Carbon::parse($state['fecha'])->format('d/m/Y') : 'Nueva Novedad'
+                                )
+                                ->collapsible()
+                                ->collapsed()
+                                ->defaultItems(0),
+                        ])
                     ])->columnSpanFull(),
             ]);
     }

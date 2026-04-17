@@ -15,6 +15,7 @@ class AreaResource extends Resource
     protected static ?string $model = Area::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-squares-2x2';
+    protected static ?int $navigationSort = 2;
 
     // Etiquetas en español (con tilde)
     protected static ?string $modelLabel = 'Área';

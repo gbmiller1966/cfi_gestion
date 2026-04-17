@@ -9,7 +9,7 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Support\Facades\FilamentView; 
+use Filament\Support\Facades\FilamentView; // Importante para los Hooks
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -34,6 +34,7 @@ class AdminPanelProvider extends PanelProvider
             ->homeUrl(fn () => auth()->user()?->hasRole('Director') ? '/admin/expedientes' : '/admin')
 
             // --- PERSONALIZACIÓN VISUAL ---
+            //->brandName('Gestión CFI')
             ->brandLogo(asset('images/logo-cfi.png'))
             ->brandLogoHeight('3rem')
             ->favicon(asset('images/favicon.png'))
@@ -47,27 +48,28 @@ class AdminPanelProvider extends PanelProvider
                 'logout' => \Filament\Navigation\MenuItem::make()->label('Salir'),
             ])
 
-            // --- HOOKS DE ESTILOS (Director + Paginador Forzado) ---
+            // --- HOOKS PARA EL DIRECTOR (Interfaz Limpia) ---
             ->renderHook(
                 'panels::head.end',
                 fn () => new HtmlString("
                     <style>
-                        /* 1. Estilos para el Director */
+                        /* 1. Estilos para el Director (Lo que ya tenías) */
                         " . (auth()->check() && auth()->user()->hasRole('Director') ? "
                             .fi-sidebar, .fi-topbar-start button { display: none !important; }
                             .fi-main-ctn { margin-left: 0 !important; }
-                            .fi-topbar nav { justify-content: space-between !important; width: 100% !important; padding: 0 1rem !important; }
-                            .fi-topbar-nav-list { 
+                            .fi-topbar nav-list { 
                                 display: flex !important; 
+                                justify-content: flex-start !important; 
                                 gap: 2rem !important; 
-                                margin-left: 2rem !important;
+                                width: 100% !important; 
                             }
+                            .fi-topbar-start button { display: none !important; }
                             .fi-topbar { background-color: white !important; border-bottom: 1px solid #e5e7eb !important; }
                         " : "") . "
 
-                        /* 2. SOLUCIÓN AL PAGINADOR (REFORZADA) */
+                        /* 2. SOLUCIÓN AL PAGINADOR (Para todos los roles) */
 
-                        /* Forzamos que el contenedor sea flexible y ocupe todo el ancho */
+                        /* Forzamos que el pie de la tabla no colapse el contenido */
                         .fi-ta-pagination nav {
                             display: flex !important;
                             width: 100% !important;
@@ -75,34 +77,27 @@ class AdminPanelProvider extends PanelProvider
                             align-items: center !important;
                         }
 
-                        /* Forzamos que el texto 'Se muestran de...' no se esconda NUNCA */
+                        /* Forzamos visibilidad del texto 'Se muestran de X a Y...' */
                         .fi-ta-pagination-records-range-label {
                             display: block !important;
-                            visibility: visible !important;
                         }
 
-                        /* Forzamos que la lista de números (1, 2, 3...) aparezca */
+                        /* Forzamos visibilidad de la lista de números (1, 2, 3...) */
                         .fi-ta-pagination-list {
                             display: flex !important;
-                            visibility: visible !important;
                         }
 
-                        /* Ocultamos los botones de 'Siguiente' / 'Anterior' simples que 
-                           solo ocupan espacio cuando el ancho es reducido */
-                        .fi-ta-pagination-simple {
-                            display: none !important;
-                        }
-
-                        /* Ajuste final para que los números no se amontonen */
-                        .fi-ta-pagination-list li {
-                            display: inline-block !important;
+                        /* Evitamos que los botones de Siguiente/Anterior tapen el resto en móviles */
+                        .fi-ta-pagination div:last-child {
+                            display: flex !important;
+                            gap: 0.5rem;
                         }
                     </style>
                 ")
             )
 
-            // 2. EL HOOK DEL LOGO
-/*             ->renderHook(
+            // 2. EL HOOK DEL LOGO (Para que aparezca a la izquierda en ese espacio)
+            ->renderHook(
                 'panels::topbar.start',
                 fn () => auth()->check() && auth()->user()->hasRole('Director')
                     ? new HtmlString("
@@ -110,8 +105,8 @@ class AdminPanelProvider extends PanelProvider
                             <img src='" . asset('images/logo-cfi.png') . "' alt='Logo CFI' style='height: 2.5rem; width: auto;'>
                         </div>
                     ") : ''
-            ) */
-            
+            )
+            // --- DESCUBRIMIENTO AUTOMÁTICO ---
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
