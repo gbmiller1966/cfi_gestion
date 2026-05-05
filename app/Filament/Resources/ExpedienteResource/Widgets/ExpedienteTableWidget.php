@@ -76,14 +76,19 @@ class ExpedienteTableWidget extends BaseWidget
                 $query = Expediente::query()->with(['estado', 'provincia']);
                 $user = auth()->user();
 
-                // 1. Filtro de Seguridad por Rol (Lo que ya tenías)
+                // 1. Filtro de Seguridad por Rol
                 if ($user->hasRole('Director')) {
-                    $query->where('direccion_id', $user->direccion_id);
-                } elseif ($user->hasRole('Jefe de Área')) {
-                    $query->whereHas('tecnico', fn ($q) => $q->where('area_id', $user->area_id));
-                } elseif (!$user->hasRole('Admin')) {
-                    $query->where('user_id', $user->id);
-                }
+                        $query->where('direccion_id', $user->direccion_id);
+                    }
+                    elseif ($user->hasRole('Jefe de Área')) {
+                        // 💡 Hernán verá expedientes de técnicos de su misma área
+                        $query->whereHas('tecnico', function (Builder $q) use ($user) {
+                            $q->where('area_id', $user->area_id);
+                        });
+                    }
+                    elseif (!$user->hasRole('Admin')) {
+                        $query->where('user_id', $user->id);
+                    }
 
                 // 2. Filtro dinámico de Provincia (Dashboard)
                 $provinciaId = $this->filters['provincia_id'] ?? null;
@@ -126,7 +131,7 @@ class ExpedienteTableWidget extends BaseWidget
             // 💡 CAMBIO 2: Reforzamos la visibilidad de los links
             ->extremePaginationLinks()
 
-            ->actionsColumnLabel('Acciones') 
+            ->actionsColumnLabel('Acciones')
             ->actionsPosition(Tables\Enums\ActionsPosition::AfterColumns)
 
             ->columns([

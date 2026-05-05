@@ -55,18 +55,18 @@ class User extends Authenticatable implements FilamentUser, HasName
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        // 1. Si es Admin, entra siempre.
+        // 1. Si es Admin, entra siempre a cualquier panel.
         if ($this->hasRole('Admin')) {
             return true;
         }
 
-        // 2. IMPORTANTE: Si es Técnico o Director, SOLO entra si ya tiene Dirección asignada por el Admin.
-        // Si direccion_id es null, Filament le denegará el acceso (ideal para tu flujo de aprobación).
+        // 2. Acceso al Panel Principal ('admin')
+        // Aquí deben poder entrar Directores y Jefes de Área.
         if ($panel->getId() === 'admin') {
-            return $this->hasRole(['Director']);
+            return $this->hasAnyRole(['Director', 'Jefe de Área']);
         }
 
-        // 3. Regla para el Panel de Técnico (donde entran los Técnicos)
+        // 3. Acceso al Panel de Técnico
         if ($panel->getId() === 'tecnico') {
             return $this->hasRole('Técnico');
         }

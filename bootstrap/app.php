@@ -13,10 +13,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         //
     })
-    ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, Request $request) {
+->withExceptions(function (Exceptions $exceptions): void {
+        // 💡 Agregamos el namespace completo en el argumento para evitar ambigüedad
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, \Illuminate\Http\Request $request) {
             if ($e->getStatusCode() === 419) {
-                // Si la página expira, lo mandamos al login de Filament
                 return redirect()->route('filament.admin.auth.login');
             }
         });

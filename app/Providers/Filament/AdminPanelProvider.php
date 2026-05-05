@@ -9,7 +9,7 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Support\Facades\FilamentView; 
+use Filament\Support\Facades\FilamentView;
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -31,7 +31,17 @@ class AdminPanelProvider extends PanelProvider
             ->login(\App\Filament\Pages\Auth\UnifiedLogin::class)
             ->registration(\App\Filament\Pages\Auth\RegistroTecnico::class)
             ->passwordReset()
-            ->homeUrl(fn () => auth()->user()?->hasRole('Director') ? '/admin/expedientes' : '/admin')
+            ->homeUrl(function () {
+                $user = auth()->user();
+                if (!$user) return '/admin/login';
+
+                // Si tiene rol de Director o Jefe de Área, y tiene sus campos asignados, va a expedientes
+                if ($user->hasAnyRole(['Director', 'Jefe de Área'])) {
+                    return ($user->direccion_id || $user->area_id) ? '/admin/expedientes' : '/admin';
+                }
+
+                return '/admin';
+            })
 
             // --- PERSONALIZACIÓN VISUAL ---
             ->brandLogo(asset('images/logo-cfi.png'))
@@ -57,9 +67,9 @@ class AdminPanelProvider extends PanelProvider
                             .fi-sidebar, .fi-topbar-start button { display: none !important; }
                             .fi-main-ctn { margin-left: 0 !important; }
                             .fi-topbar nav { justify-content: space-between !important; width: 100% !important; padding: 0 1rem !important; }
-                            .fi-topbar-nav-list { 
-                                display: flex !important; 
-                                gap: 2rem !important; 
+                            .fi-topbar-nav-list {
+                                display: flex !important;
+                                gap: 2rem !important;
                                 margin-left: 2rem !important;
                             }
                             .fi-topbar { background-color: white !important; border-bottom: 1px solid #e5e7eb !important; }
@@ -87,7 +97,7 @@ class AdminPanelProvider extends PanelProvider
                             visibility: visible !important;
                         }
 
-                        /* Ocultamos los botones de 'Siguiente' / 'Anterior' simples que 
+                        /* Ocultamos los botones de 'Siguiente' / 'Anterior' simples que
                            solo ocupan espacio cuando el ancho es reducido */
                         .fi-ta-pagination-simple {
                             display: none !important;
@@ -111,7 +121,7 @@ class AdminPanelProvider extends PanelProvider
                         </div>
                     ") : ''
             ) */
-            
+
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
