@@ -47,7 +47,7 @@ class Expediente extends Model
                 $regionId = \DB::table('provincias')
                     ->where('id', $expediente->provincia_id)
                     ->value('region_id');
-                    
+
                 if ($regionId) {
                     $expediente->region_id = $regionId;
                 }
@@ -87,7 +87,7 @@ class Expediente extends Model
     public function region(): BelongsTo { return $this->belongsTo(Region::class); }
     public function provincia(): BelongsTo { return $this->belongsTo(Provincia::class); }
     public function localidad(): BelongsTo { return $this->belongsTo(Localidad::class); }
-    
+
     // Aquí aplicamos los cambios de nombres
     public function contraparte(): BelongsTo { return $this->belongsTo(Contraparte::class); }
     public function asignacion(): BelongsTo { return $this->belongsTo(Asignacion::class); }

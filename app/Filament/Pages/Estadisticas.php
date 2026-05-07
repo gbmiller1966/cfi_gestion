@@ -14,21 +14,23 @@ use App\Filament\Resources\ExpedienteResource\Widgets\EstadoExpedientesChart;
 
 class Estadisticas extends Page
 {
-    use HasFiltersForm; // Mantenemos los filtros aquí para los gráficos
+    use HasFiltersForm;
 
     protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-bar';
     protected static ?string $navigationLabel = 'Estadísticas';
     protected static ?string $title = 'Tablero de Control Estadístico';
-    protected static string $view = 'filament.pages.estadisticas'; // Crearemos esta vista simple
+    protected static string $view = 'filament.pages.estadisticas';
     protected static ?int $navigationSort = 2;
 
     public static function shouldRegisterNavigation(): bool
     {
-        return auth()->user()->hasRole('Director');
+        // 💡 AHORA: Ambos roles pueden ver la pestaña
+        return auth()->user()->hasAnyRole(['Director', 'Jefe de Área']);
     }
 
     public function filtersForm(Form $form): Form
     {
+        // 💡 Filtros: Los mantenemos, pero podrías ocultarlos para el Jefe si no los necesita
         return $form->schema([
             Section::make('Filtros')
                 ->schema([
@@ -39,16 +41,30 @@ class Estadisticas extends Page
                         ->live()
                         ->placeholder('Todas las provincias'),
                 ])
+                ->hidden(fn() => auth()->user()->hasRole('Jefe de Área')) // Opcional: ocultar filtros si el jefe no los usa
         ]);
     }
 
     protected function getHeaderWidgets(): array
     {
+        $user = auth()->user();
+
+        // 💡 Lógica de visualización de Widgets por Rol
+        if ($user->hasRole('Jefe de Área')) {
+            return [
+                \App\Filament\Widgets\StatsGestionArea::class,          // Los stats simples
+                \App\Filament\Widgets\ExpedientesPorTecnicoChart::class, // El gráfico de su equipo
+            ];
+        }
+
+        // Si es Director, mantiene sus widgets originales + los nuevos si querés
         return [
+            \App\Filament\Widgets\StatsGestionArea::class, // También le sirve al Director (verá totales de Dir)
             \App\Filament\Widgets\ComparativoAnualChart::class,
             ExpedientesStats::class,
             EstadoExpedientesChart::class,
             TiemposPromedioChart::class,
+            \App\Filament\Widgets\ExpedientesPorTecnicoChart::class, // El director verá a TODOS sus técnicos
         ];
     }
 }

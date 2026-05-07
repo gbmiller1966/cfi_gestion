@@ -89,4 +89,7 @@ class User extends Authenticatable implements FilamentUser, HasName
     {
         return $this->belongsTo(Area::class);
     }
+
+    // --- Relación con los expedientes donde este usuario es el técnico a cargo
+    public function expedientes(): \Illuminate\Database\Eloquent\Relations\HasMany{return $this->hasMany(Expediente::class, 'user_id');}
 }

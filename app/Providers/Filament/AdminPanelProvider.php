@@ -57,60 +57,55 @@ class AdminPanelProvider extends PanelProvider
                 'logout' => \Filament\Navigation\MenuItem::make()->label('Salir'),
             ])
 
-            // --- HOOKS DE ESTILOS (Director + Paginador Forzado) ---
+            // --- HOOKS DE ESTILOS (Director & Jefe de Área + Paginador Forzado) ---
             ->renderHook(
                 'panels::head.end',
-                fn () => new HtmlString("
+                fn () => auth()->check() && auth()->user()->hasAnyRole(['Director', 'Jefe de Área'])
+                ? new HtmlString("
                     <style>
-                        /* 1. Estilos para el Director */
-                        " . (auth()->check() && auth()->user()->hasRole('Director') ? "
-                            .fi-sidebar, .fi-topbar-start button { display: none !important; }
-                            .fi-main-ctn { margin-left: 0 !important; }
-                            .fi-topbar nav { justify-content: space-between !important; width: 100% !important; padding: 0 1rem !important; }
-                            .fi-topbar-nav-list {
-                                display: flex !important;
-                                gap: 2rem !important;
-                                margin-left: 2rem !important;
-                            }
-                            .fi-topbar { background-color: white !important; border-bottom: 1px solid #e5e7eb !important; }
-                        " : "") . "
+                        /* 1. Interfaz Limpia: Ocultamos sidebar y botones de hamburguesa */
+                        .fi-sidebar,
+                        .fi-topbar-start button,
+                        .fi-sidebar-close-overlay {
+                            display: none !important;
+                        }
 
-                        /* 2. SOLUCIÓN AL PAGINADOR (REFORZADA) */
+                        /* 2. Ajuste de Margen Principal */
+                        .fi-main-ctn { margin-left: 0 !important; }
 
-                        /* Forzamos que el contenedor sea flexible y ocupe todo el ancho */
+                        /* 3. Navegación Superior Estilo Pestañas */
+                        .fi-topbar nav {
+                            justify-content: space-between !important;
+                            width: 100% !important;
+                            padding: 0 1rem !important;
+                        }
+
+                        .fi-topbar-nav-list {
+                            display: flex !important;
+                            gap: 2rem !important;
+                            margin-left: 2rem !important;
+                        }
+
+                        .fi-topbar {
+                            background-color: white !important;
+                            border-bottom: 1px solid #e5e7eb !important;
+                        }
+
+                        /* Estilos del Paginador (Los que ya tenías para Miller) */
                         .fi-ta-pagination nav {
                             display: flex !important;
                             width: 100% !important;
                             justify-content: space-between !important;
                             align-items: center !important;
                         }
-
-                        /* Forzamos que el texto 'Se muestran de...' no se esconda NUNCA */
-                        .fi-ta-pagination-records-range-label {
-                            display: block !important;
-                            visibility: visible !important;
-                        }
-
-                        /* Forzamos que la lista de números (1, 2, 3...) aparezca */
-                        .fi-ta-pagination-list {
+                        .fi-ta-pagination-records-range-label, .fi-ta-pagination-list {
                             display: flex !important;
                             visibility: visible !important;
                         }
-
-                        /* Ocultamos los botones de 'Siguiente' / 'Anterior' simples que
-                           solo ocupan espacio cuando el ancho es reducido */
-                        .fi-ta-pagination-simple {
-                            display: none !important;
-                        }
-
-                        /* Ajuste final para que los números no se amontonen */
-                        .fi-ta-pagination-list li {
-                            display: inline-block !important;
-                        }
+                        .fi-ta-pagination-simple { display: none !important; }
                     </style>
-                ")
+                ") : ""
             )
-
             // 2. EL HOOK DEL LOGO
 /*             ->renderHook(
                 'panels::topbar.start',
