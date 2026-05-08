@@ -45,7 +45,7 @@ class AdminPanelProvider extends PanelProvider
 
             // --- PERSONALIZACIÓN VISUAL ---
             ->brandLogo(asset('images/logo-cfi.png'))
-            ->brandLogoHeight('3rem')
+            ->brandLogoHeight('2.5rem')
             ->favicon(asset('images/favicon.png'))
             ->darkMode(false)
             ->colors([
@@ -57,41 +57,30 @@ class AdminPanelProvider extends PanelProvider
                 'logout' => \Filament\Navigation\MenuItem::make()->label('Salir'),
             ])
 
-            // --- HOOKS DE ESTILOS (Director & Jefe de Área + Paginador Forzado) ---
+            // --- HOOKS DE ESTILOS ---
             ->renderHook(
                 'panels::head.end',
-                fn () => auth()->check() && auth()->user()->hasAnyRole(['Director', 'Jefe de Área'])
-                ? new HtmlString("
+                fn () => auth()->check() ? new HtmlString("
                     <style>
-                        /* 1. Interfaz Limpia: Ocultamos sidebar y botones de hamburguesa */
-                        .fi-sidebar,
-                        .fi-topbar-start button,
-                        .fi-sidebar-close-overlay {
-                            display: none !important;
-                        }
-
-                        /* 2. Ajuste de Margen Principal */
-                        .fi-main-ctn { margin-left: 0 !important; }
-
-                        /* 3. Navegación Superior Estilo Pestañas */
-                        .fi-topbar nav {
-                            justify-content: space-between !important;
-                            width: 100% !important;
-                            padding: 0 1rem !important;
-                        }
-
+                        /* 1. Forzar que la navegación superior parezca un menú de pestañas */
                         .fi-topbar-nav-list {
                             display: flex !important;
-                            gap: 2rem !important;
+                            gap: 1.5rem !important;
                             margin-left: 2rem !important;
                         }
 
-                        .fi-topbar {
-                            background-color: white !important;
-                            border-bottom: 1px solid #e5e7eb !important;
+                        /* 2. Estilo de los links de navegación (opcional, para resaltar la activa) */
+                        .fi-topbar-nav-link-active {
+                            border-bottom: 2px solid #0055A5 !important;
+                            border-radius: 0 !important;
                         }
 
-                        /* Estilos del Paginador (Los que ya tenías para Miller) */
+                        /* 3. Limpieza de elementos innecesarios en modo TopNav */
+                        .fi-topbar-start button[aria-controls='sidebar'] {
+                            display: none !important;
+                        }
+
+                        /* 4. Estilos del Paginador Miller */
                         .fi-ta-pagination nav {
                             display: flex !important;
                             width: 100% !important;
@@ -106,16 +95,6 @@ class AdminPanelProvider extends PanelProvider
                     </style>
                 ") : ""
             )
-            // 2. EL HOOK DEL LOGO
-/*             ->renderHook(
-                'panels::topbar.start',
-                fn () => auth()->check() && auth()->user()->hasRole('Director')
-                    ? new HtmlString("
-                        <div class='flex items-center px-4'>
-                            <img src='" . asset('images/logo-cfi.png') . "' alt='Logo CFI' style='height: 2.5rem; width: auto;'>
-                        </div>
-                    ") : ''
-            ) */
 
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')

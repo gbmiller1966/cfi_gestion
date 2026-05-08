@@ -9,6 +9,7 @@ class ExpedientesPorTecnicoChart extends ChartWidget
 {
     protected static ?string $heading = 'Carga de Trabajo por Técnico';
     protected static string $color = 'primary';
+    protected int | string | array $columnSpan = 1;
 
     protected function getData(): array
     {
